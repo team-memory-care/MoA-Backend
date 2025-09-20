@@ -10,46 +10,39 @@ jobs:
 
     steps:
       # 1️⃣ Checkout 코드
-      - name: "Checkout repository"
+      - name: "📂 Checkout repository"
         uses: actions/checkout@v3
 
       # 2️⃣ JDK 설정
-      - name: "Set up JDK 17"
+      - name: "☕ Set up JDK 17"
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
       # 3️⃣ Gradle 빌드
-      - name: "Build with Gradle"
+      - name: "🛠️ Build with Gradle"
         run: ./gradlew build -x test
 
       # 4️⃣ Docker 로그인
-      - name: "Log in to DockerHub"
+      - name: "🔑 Log in to DockerHub"
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 5️⃣ Dockerfile 위치 확인 (디버깅용)
-      - name: "Debug: Find Dockerfile"
-        run: |
-          echo "Searching for Dockerfile..."
-          find . -name "Dockerfile"
-
-      # 6️⃣ Docker 빌드 & 푸시
-      - name: "Build and Push Docker image"
+      # 5️⃣ Docker 빌드 & 푸시 (루트의 ./Dockerfile 사용)
+      - name: "🐳 Build and Push Docker image"
         run: |
           docker buildx create --use
           docker buildx build \
             --platform linux/amd64 \
             -t ${{ secrets.DOCKER_USERNAME }}/moa-backend:latest \
             --push \
-            -f ./Dockerfile .   # 👉 루트에 Dockerfile 있을 때
-            # -f backend/Dockerfile backend   # 👉 backend 폴더에 있을 때
+            -f ./Dockerfile .
 
-      # 7️⃣ EC2에 SSH 접속해서 배포
-      - name: "Deploy to EC2"
+      # 6️⃣ EC2에 SSH 접속해서 배포
+      - name: "🚀 Deploy to EC2"
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
