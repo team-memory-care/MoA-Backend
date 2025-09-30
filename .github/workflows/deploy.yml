@@ -41,7 +41,7 @@ jobs:
           docker buildx build \
             --platform linux/amd64 \
             -t ${{ secrets.DOCKER_USERNAME }}/moa-backend:latest \
-            --push
+            --push .
   cd:
     needs: [ ci ]
     runs-on: ubuntu-latest
