@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   app:
-    image: lovesoongalarm/lovesoongalarm:latest
+    image: bricksky/moa-backend:latest
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
