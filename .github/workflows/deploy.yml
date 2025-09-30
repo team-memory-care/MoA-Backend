@@ -49,6 +49,7 @@ jobs:
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
     # 6️⃣ EC2에 SSH 접속해서 배포
     steps:
       - name: Checkout
@@ -69,7 +70,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME
           script: |
             cd ~/deploy
             ./deploy.sh
