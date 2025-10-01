@@ -9,6 +9,16 @@ public record UserSecurityForm(
         ERole role,
         EUserStatus status
 ) {
+    public Long getId() {
+        return id;
+    }
+    public ERole getRole() {
+        return role;
+    }
+    public EUserStatus getStatus() {
+        return status;
+    }
+
     public static UserSecurityForm from(User user) {
         return new UserSecurityForm(
                 user.getId(),
