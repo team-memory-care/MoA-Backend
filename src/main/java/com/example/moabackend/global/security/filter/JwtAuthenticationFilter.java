@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.filter;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.security.info.JwtUserInfo;
 import com.example.moabackend.global.security.provider.JwtAuthenticationManager;

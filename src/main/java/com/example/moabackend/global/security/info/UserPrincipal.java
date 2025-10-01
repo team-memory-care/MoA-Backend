@@ -1,8 +1,8 @@
 package com.example.moabackend.global.security.info;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
-import com.example.moabackend.domain.user.persistence.entity.type.EUserStatus;
-import com.example.moabackend.domain.user.persistence.repository.UserSecurityForm;
+import com.example.moabackend.domain.user.dto.UserSecurityForm;
+import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,7 @@
-package com.example.moabackend.domain.user.persistence.repository;
+package com.example.moabackend.domain.user.repository;
 
-import com.example.moabackend.domain.user.persistence.entity.User;
+import com.example.moabackend.domain.user.dto.UserSecurityForm;
+import com.example.moabackend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
