@@ -40,6 +40,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request
+                                .requestMatchers("/api/users/signup", "/api/users/login").permitAll()
                                 .requestMatchers(Constants.NO_NEED_AUTH.toArray(String[]::new)).permitAll()
                                 .requestMatchers("/api/**").hasAnyRole("USER", "PARENT", "ADMIN")
                                 .anyRequest().authenticated()

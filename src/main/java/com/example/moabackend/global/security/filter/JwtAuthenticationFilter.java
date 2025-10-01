@@ -43,6 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // 회원가입, 로그인 요청은 토큰 검사하지 않고 통과
+        String path = request.getRequestURI();
+        if(path.startsWith("/api/users/signup") || path.startsWith("/api/users/login")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = parseJwt(request);
 
         Claims claims = jwtUtil.validateToken(token);
