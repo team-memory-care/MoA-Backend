@@ -24,10 +24,10 @@ public class AuthController {
     }
 
     @PostMapping("/verify-code")
-    public ResponseEntity<String> verifyCode(@RequestParam String phoneNumber, @RequestParam String code, Errors errors) {
+    public ResponseEntity<String> verifyCode(@RequestParam String phoneNumber, @RequestParam String code) {
         boolean result = authService.verifyAuthCode(phoneNumber, code);
         return result
-                ? ResponseEntity.ok("인증 성공"):
+                ? ResponseEntity.ok("인증 성공") :
                 ResponseEntity.badRequest().body("인증 실패");
     }
 }
