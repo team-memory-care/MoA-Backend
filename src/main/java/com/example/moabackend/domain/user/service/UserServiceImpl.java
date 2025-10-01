@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
                 .role(request.role())
                 .gender(request.gender())
                 .status(EUserStatus.ACTIVE)
-                .birthDate(String.valueOf(LocalDate.parse(request.birthDate())))
+                .birthDate(request.birthDate())
                 .build();
 
         User savedUser = userRepository.save(user);
