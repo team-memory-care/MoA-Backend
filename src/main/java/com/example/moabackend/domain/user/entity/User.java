@@ -1,7 +1,7 @@
-package com.example.moabackend.domain.user.persistence.entity;
+package com.example.moabackend.domain.user.entity;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
-import com.example.moabackend.domain.user.persistence.entity.type.EUserStatus;
+import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
