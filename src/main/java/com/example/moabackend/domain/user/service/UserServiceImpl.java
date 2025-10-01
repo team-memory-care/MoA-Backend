@@ -31,6 +31,6 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        return UserResponseDto.from(user);
+        return UserResponseDto.from(savedUser);
     }
 }
