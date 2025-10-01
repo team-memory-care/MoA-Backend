@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.entity;
 
 import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.EUserGender;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,6 +20,9 @@ public class User {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "birthDate")
+    private String birthDate;
+
     @Column(name = "phone_number")
     private String phoneNumber;
 
@@ -30,11 +34,17 @@ public class User {
     @Enumerated(EnumType.STRING)
     private EUserStatus status;
 
+    @Column(name = "gender", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EUserGender gender;
+
     @Builder
-    private User(String name, String phoneNumber, ERole role, EUserStatus status) {
+    public User(String name, String birthDate, String phoneNumber, ERole role, EUserStatus status, EUserGender gender) {
         this.name = name;
+        this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
         this.role = role;
         this.status = status;
+        this.gender = gender;
     }
 }
