@@ -9,17 +9,16 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
     // 인증 코드 생성
     @Override
-    public String generateAuthCode(String phoneNumber){
+    public String generateAuthCode(String phoneNumber) {
         String code = String.format("%06d", new Random().nextInt(1000000));
-        // 6자리 무작위 생성
         stringRedisTemplate.opsForValue()
-                .set("auth: " + phoneNumber, code, 3, TimeUnit.MINUTES);
+                .set("auth: " + phoneNumber, code, 5, TimeUnit.MINUTES);
         return code;
     }
 
