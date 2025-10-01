@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,7 +23,7 @@ public class User {
     private String name;
 
     @Column(name = "birthDate")
-    private String birthDate;
+    private LocalDate birthDate;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -39,7 +41,7 @@ public class User {
     private EUserGender gender;
 
     @Builder
-    public User(String name, String birthDate, String phoneNumber, ERole role, EUserStatus status, EUserGender gender) {
+    public User(String name, LocalDate birthDate, String phoneNumber, ERole role, EUserStatus status, EUserGender gender) {
         this.name = name;
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
