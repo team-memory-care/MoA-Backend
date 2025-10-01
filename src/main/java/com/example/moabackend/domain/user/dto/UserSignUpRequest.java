@@ -2,8 +2,11 @@ package com.example.moabackend.domain.user.dto;
 
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserGender;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+
+import java.time.LocalDate;
 
 public record UserSignUpRequest(
         @NotBlank(message = "이름은 필수 입력값입니다.")
