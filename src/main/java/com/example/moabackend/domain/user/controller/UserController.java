@@ -5,6 +5,7 @@ import com.example.moabackend.domain.user.dto.UserSignUpRequest;
 import com.example.moabackend.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,6 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody UserSignUpRequest request) {
         UserResponseDto response = userService.signUp(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
