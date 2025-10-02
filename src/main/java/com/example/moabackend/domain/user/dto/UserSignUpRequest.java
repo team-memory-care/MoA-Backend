@@ -3,6 +3,7 @@ package com.example.moabackend.domain.user.dto;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserGender;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record UserSignUpRequest(
@@ -17,7 +18,7 @@ public record UserSignUpRequest(
         @Pattern(regexp = "^010\\d{8}$", message = "전화번호는 010으로 시작하는 11자리 숫자여야 합니다.")
         String phoneNumber,
 
-        EUserGender gender,
-        ERole role
+        @NotNull EUserGender gender,
+        @NotNull ERole role
 ) {
 }
