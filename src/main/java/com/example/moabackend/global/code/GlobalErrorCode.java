@@ -64,4 +64,9 @@ public enum GlobalErrorCode implements ErrorCode {
 
     private final HttpStatus status;
     private final String message;
+
+    @Override
+    public String getCode(){
+        return this.name();
+    }
 }
