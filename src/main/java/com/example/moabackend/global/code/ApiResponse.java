@@ -22,7 +22,7 @@ public record ApiResponse<T>(
     }
 
     // 실패 응답
-    public static <T> ResponseEntity<ApiResponse<T>> error(GlobalErrorCode code) {
+    public static <T> ResponseEntity<ApiResponse<T>> error(ErrorCode code) {
         ApiResponse<T> response = new ApiResponse<>(
                 false,
                 code.getStatus().value(),
@@ -32,4 +32,5 @@ public record ApiResponse<T>(
         );
         return ResponseEntity.status(code.getStatus()).body(response);
     }
+
 }
