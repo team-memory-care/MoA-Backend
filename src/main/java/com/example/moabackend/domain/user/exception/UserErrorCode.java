@@ -22,4 +22,9 @@ public enum UserErrorCode implements ErrorCode {
     public String getMessage() {
         return this.message;
     }
+
+    @Override
+    public String getCode(){
+        return this.name();
+    }
 }
