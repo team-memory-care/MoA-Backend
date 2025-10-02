@@ -30,6 +30,8 @@ public enum GlobalErrorCode implements ErrorCode {
     TOKEN_UNSUPPORTED_ERROR(HttpStatus.UNAUTHORIZED, "지원하지않는 토큰입니다."),
     EXPIRED_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     TOKEN_UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
+    REDIS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 작업 중 오류가 발생했습니다."),
+    INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않거나 만료되었습니다."),
 
     /**
      * 403 : 권한 부족
@@ -59,4 +61,9 @@ public enum GlobalErrorCode implements ErrorCode {
 
     private final HttpStatus status;
     private final String message;
+
+    @Override
+    public String getCode(){
+        return this.name();
+    }
 }

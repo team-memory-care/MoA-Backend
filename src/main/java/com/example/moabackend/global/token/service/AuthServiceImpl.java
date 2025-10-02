@@ -27,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
         String savedCode = stringRedisTemplate.opsForValue().get("auth: " + phoneNumber);
 
         if (savedCode != null && savedCode.equals(inputCode)) {
-            stringRedisTemplate.delete("auth: " + phoneNumber);
+            stringRedisTemplate.delete("auth:" + phoneNumber);
             return true;
         }
         return false;

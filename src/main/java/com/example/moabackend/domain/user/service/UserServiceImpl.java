@@ -5,8 +5,8 @@ import com.example.moabackend.domain.user.dto.UserSignUpRequest;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
+import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,21 +17,29 @@ import java.time.format.DateTimeFormatter;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisService redisService;
 
     @Override
-    public UserResponseDto signUp(UserSignUpRequest request) {
+    public void preSignup(UserSignUpRequest request) {
+        // 회원정보 Redis에 임시 저장 (TTL 5분)
+        redisService.setData("preuser: " + request.phoneNumber(), request, 5);
+    }
 
-        // Redis에서 인증번호 조회
-        String savedCode = stringRedisTemplate.opsForValue().get("auth: " + request.phoneNumber());
-
-        if(savedCode==null || !savedCode.equals(request.authCode())){
-            throw new IllegalArgumentException("전화번호 인증 실패: 인증 번호가 일치하지 않거나 만료되었습니다.");
+    @Override
+    public UserResponseDto confirmSignup(String phoneNumber) {
+        // 인증 여부 확인
+        Boolean verified = redisService.getData("verified: " + phoneNumber, Boolean.class);
+        if (verified == null || !verified) {
+            throw new IllegalArgumentException("전화번호 인증이 완료되지 않았습니다.");
         }
 
-        // 인증 성공시 Redis에서 제거
-        stringRedisTemplate.delete("auth: " + request.phoneNumber());
+        // 임시 저장된 사용자 정보 가져오기
+        UserSignUpRequest request = redisService.getData("preuser: " + phoneNumber, UserSignUpRequest.class);
+        if (request == null) {
+            throw new IllegalArgumentException("회원 정보가 만료되었습니다.");
+        }
 
+        // User 엔티티 저장
         LocalDate parseBirthDate = LocalDate.parse(request.birthDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         User user = User.builder()
@@ -44,6 +52,11 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        // 사용 후 redis 삭제
+        redisService.deleteData("verified: " + phoneNumber);
+        redisService.deleteData("preuser: " + phoneNumber);
+
         return UserResponseDto.from(savedUser);
     }
 }
