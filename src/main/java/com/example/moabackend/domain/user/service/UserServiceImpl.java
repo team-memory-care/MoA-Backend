@@ -23,8 +23,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void preSignup(UserSignUpRequest request) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
+        String formattedBirthDate = parsed.toString();
+
+        UserSignUpRequest fixedRequest = new UserSignUpRequest(
+                request.name(),
+                formattedBirthDate,
+                request.phoneNumber(),
+                request.gender(),
+                request.role()
+        );
         // 회원정보 Redis에 임시 저장 (TTL 5분)
-        redisService.setData("preuser:" + request.phoneNumber(), request, 5);
+        redisService.setData("preuser:" + request.phoneNumber(), fixedRequest, 5);
     }
 
     @Override
@@ -41,8 +52,13 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
         }
 
+        // 중복된 전화번호 확인
+        if(userRepository.existsByPhoneNumber(phoneNumber)){
+            throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+        }
+
         // User 엔티티 저장
-        LocalDate parseBirthDate = LocalDate.parse(request.birthDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+        LocalDate parseBirthDate = LocalDate.parse(request.birthDate());
 
         User user = User.builder()
                 .name(request.name())
