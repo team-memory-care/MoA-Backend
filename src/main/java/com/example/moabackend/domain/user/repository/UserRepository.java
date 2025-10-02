@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u.id as id, u.role as role, u.status as status from User u where u.id = :id")
     Optional<UserSecurityForm> findUserSecurityFormById(@Param("id") Long id);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }
