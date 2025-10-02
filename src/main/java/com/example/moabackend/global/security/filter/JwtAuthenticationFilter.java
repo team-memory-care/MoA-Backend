@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.filter;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.security.info.JwtUserInfo;
 import com.example.moabackend.global.security.provider.JwtAuthenticationManager;
@@ -42,6 +42,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+
+        // 회원가입, 로그인, 인증 코드 관련 요청은 토큰 검사하지 않고 통과
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/users/signup")
+                || path.startsWith("/api/users/login")
+                || path.startsWith("/api/auth/send-code")
+                || path.startsWith("/api/auth/verify-code")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String token = parseJwt(request);
 

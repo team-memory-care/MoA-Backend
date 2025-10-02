@@ -14,4 +14,9 @@ public enum GlobalSuccessCode implements SuccessCode {
 
     private final HttpStatus status;
     private final String message;
+
+    @Override
+    public String getCode() {
+        return this.name();
+    }
 }

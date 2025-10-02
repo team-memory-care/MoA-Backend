@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.info;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import lombok.Builder;
 
 @Builder

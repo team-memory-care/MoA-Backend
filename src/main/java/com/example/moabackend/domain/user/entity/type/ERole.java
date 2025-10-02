@@ -1,4 +1,4 @@
-package com.example.moabackend.domain.user.persistence.entity.type;
+package com.example.moabackend.domain.user.entity.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
