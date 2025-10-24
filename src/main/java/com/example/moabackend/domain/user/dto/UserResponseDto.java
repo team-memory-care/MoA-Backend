@@ -15,7 +15,8 @@ public record UserResponseDto(
         @JsonFormat(pattern = "yyyy-MM-dd") LocalDate birthDate,
         ERole role,
         EUserGender gender,
-        EUserStatus status
+        EUserStatus status,
+        String parentCode
 ) {
 
     public static UserResponseDto from(User user) {
@@ -26,7 +27,8 @@ public record UserResponseDto(
                 user.getBirthDate(),
                 user.getRole(),
                 user.getGender(),
-                user.getStatus()
+                user.getStatus(),
+                user.getParentCode()
         );
     }
 }

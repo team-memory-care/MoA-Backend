@@ -3,6 +3,7 @@ package com.example.moabackend.domain.user.service;
 import com.example.moabackend.domain.user.dto.UserResponseDto;
 import com.example.moabackend.domain.user.dto.UserSignUpRequest;
 import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
@@ -14,13 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RedisService redisService;
+
+    private String generateUniqueParentCode(){
+        String code;
+        do {
+            code = String.format("%04d", ThreadLocalRandom.current().nextInt(10000));
+        } while (userRepository.existsByParentCode(code));
+        return code;
+    }
 
     @Override
     public void preSignup(UserSignUpRequest request) {
@@ -62,6 +73,18 @@ public class UserServiceImpl implements UserService {
 
         // User 엔티티 저장
         LocalDate parseBirthDate = LocalDate.parse(request.birthDate());
+        String generatePatentCode = null;
+        String connectedCode = null;
+
+        if(request.role() == ERole.PARENT){
+            generatePatentCode = generateUniqueParentCode();
+        } else if (request.role() == ERole.USER){
+            String inputParentCode = request.parentCode();
+            if(inputParentCode==null || !userRepository.existsByParentCode(inputParentCode)){
+                throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
+            }
+        }
+
 
         User user = User.builder()
                 .name(request.name())
@@ -70,6 +93,8 @@ public class UserServiceImpl implements UserService {
                 .gender(request.gender())
                 .status(EUserStatus.ACTIVE)
                 .birthDate(parseBirthDate)
+                .parentCode(generatePatentCode)
+                .connectedParentCode(connectedCode)
                 .build();
 
         User savedUser = userRepository.save(user);
