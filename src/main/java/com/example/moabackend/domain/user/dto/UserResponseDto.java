@@ -16,7 +16,8 @@ public record UserResponseDto(
         ERole role,
         EUserGender gender,
         EUserStatus status,
-        String parentCode
+        String parentCode,
+        String connectedParentCode
 ) {
 
     public static UserResponseDto from(User user) {
@@ -28,7 +29,8 @@ public record UserResponseDto(
                 user.getRole(),
                 user.getGender(),
                 user.getStatus(),
-                user.getParentCode()
+                user.getParentCode(),
+                user.getConnectedParentCode()
         );
     }
 }

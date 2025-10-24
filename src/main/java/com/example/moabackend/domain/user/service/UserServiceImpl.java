@@ -115,8 +115,14 @@ public class UserServiceImpl implements UserService {
             if(inputParentCode==null || !userRepository.existsByParentCode(inputParentCode)){
                 throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
             }
+            codeToConnect = parentCode;
+        } else {
+            throw new CustomException(GlobalErrorCode.INVALID_INPUT_VALUE);
         }
 
+        user.completeRoleSelection(role, codeToIssue, codeToConnect);
+        return UserResponseDto.from(user);
+    }
 
         User user = User.builder()
                 .name(request.name())
