@@ -17,8 +17,13 @@ public class Constants {
             "/api-docs/**",
             "/v3/api-docs/**",
             "/api/auth/reissue",
-            "/ws/**",
-            "/api/auth/logout"
+            "/api/auth/logout",
+            "/api/users/signup",
+            "/api/users/signup-confirm",
+            "/api/users/login",
+            "/api/auth/send-code",
+            "/api/auth/verify-code",
+            "/ws/**"
     );
     public static final Duration SUBSCRIPTION_TTL = Duration.ofHours(24);
 }

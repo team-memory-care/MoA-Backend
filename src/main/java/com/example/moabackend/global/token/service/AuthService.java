@@ -6,4 +6,7 @@ public interface AuthService {
 
     // 인증 코드 검증
     boolean verifyAuthCode(String phoneNumber, String inputCode);
+
+    // 로그인 API
+    String login(String phoneNumber, String authCode);
 }
