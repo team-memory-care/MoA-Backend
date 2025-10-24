@@ -45,7 +45,7 @@ public enum GlobalErrorCode implements ErrorCode {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     NOT_SUPPORTED_URI_ERROR(HttpStatus.NOT_FOUND, "지원하지 않는 URL 입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 데이터입니다."),
-
+    INVALID_PARENT_CODE(HttpStatus.NOT_FOUND, "입력된 부모 회원 코드를 가진 사용자가 존재하지 않습니다."),
     /**
      * 405 : 지원하지 않는 HTTP Method
      */

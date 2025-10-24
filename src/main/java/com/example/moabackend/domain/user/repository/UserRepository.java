@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<UserSecurityForm> findUserSecurityFormById(Long id);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByParentCode(String parentCode);
 }
