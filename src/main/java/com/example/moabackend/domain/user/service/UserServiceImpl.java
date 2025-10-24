@@ -108,6 +108,16 @@ public class UserServiceImpl implements UserService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
+        if(request.role() == ERole.PARENT){
+            generatePatentCode = generateUniqueParentCode();
+        } else if (request.role() == ERole.USER){
+            String inputParentCode = request.parentCode();
+            if(inputParentCode==null || !userRepository.existsByParentCode(inputParentCode)){
+                throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
+            }
+        }
+
+
         User user = User.builder()
                 .name(request.name())
                 .phoneNumber(phoneNumber)
