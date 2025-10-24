@@ -33,7 +33,8 @@ public class UserServiceImpl implements UserService {
                 formattedBirthDate,
                 request.phoneNumber(),
                 request.gender(),
-                request.role()
+                request.role(),
+                request.parentCode()
         );
         // 회원정보 Redis에 임시 저장 (TTL 5분)
         redisService.setData("preuser:" + request.phoneNumber(), fixedRequest, 5);
