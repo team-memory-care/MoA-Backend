@@ -10,11 +10,9 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("select u.id as id, u.role as role, u.status as status from User u where u.phoneNumber = :phoneNumber")
-    Optional<UserSecurityForm> findUserSecurityFormByPhoneNumber(@Param("phoneNumber") String phoneNumber);
+    Optional<UserSecurityForm> findUserSecurityFormByPhoneNumber(String phoneNumber);
 
-    @Query("select u.id as id, u.role as role, u.status as status from User u where u.id = :id")
-    Optional<UserSecurityForm> findUserSecurityFormById(@Param("id") Long id);
+    Optional<UserSecurityForm> findUserSecurityFormById(Long id);
 
     boolean existsByPhoneNumber(String phoneNumber);
 }

@@ -5,6 +5,7 @@ import com.example.moabackend.domain.user.entity.type.EUserGender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record UserSignUpRequest(
         @NotBlank(message = "이름은 필수 입력값입니다.")
@@ -19,6 +20,11 @@ public record UserSignUpRequest(
         String phoneNumber,
 
         @NotNull EUserGender gender,
-        @NotNull ERole role
+        @NotNull ERole role,
+
+        // 자녀 회원가입 시 부모의 회원코드 입력받음
+        @Size(max = 4, message = "부모 회원코드는 4자리 숫자여야 합니다.")
+        @Pattern(regexp = "^\\d{4}$", message = "부모 회원코드는 4자리 숫자여야 합니다.")
+        String parentCode
 ) {
 }
