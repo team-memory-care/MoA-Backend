@@ -49,6 +49,23 @@ public class User {
     @Column(name = "connect_parent_code", nullable = true, length = 4)
     private String connectedParentCode;
 
+    // 로그인 성공시 상태를 ACTIVE로 변경
+    public void activate(){
+        this.status = EUserStatus.ACTIVE;
+    }
+
+    // 역할 선택 시 역할/부모코드 최종 확정
+    public void completeRoleSelection(ERole newRole, String codeToIssue, String codeToConnect){
+        this.role = newRole;
+        this.parentCode = codeToIssue;
+        this.connectedParentCode = codeToConnect;
+    }
+
+    // 부모 코드 발급/업데이트 (parentCode는 한 번 발급되면 바뀌지 않아야 함)
+    public void setParentCode(String code){
+        this.parentCode = code;
+    }
+
     @Builder
     public User(String name, LocalDate birthDate, String phoneNumber, ERole role, EUserStatus status, EUserGender gender, String parentCode, String connectedParentCode) {
         this.name = name;

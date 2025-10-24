@@ -18,7 +18,8 @@ public enum GlobalErrorCode implements ErrorCode {
     TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "요청 값의 타입이 올바르지 않습니다."),
     INValid(HttpStatus.BAD_REQUEST, "잘못된 요청 헤더입니다."),
     ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 데이터입니다."),
-
+    ALREADY_ROLE_SELECTED(HttpStatus.BAD_REQUEST, "이미 역할을 선택했습니다."),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "부모/자녀 외의 역할을 선택했습니다."),
     /**
      * 401 : 인증 실패
      */

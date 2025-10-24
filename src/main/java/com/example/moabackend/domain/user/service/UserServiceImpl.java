@@ -23,9 +23,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    // NOTE: RedisService는 현재 AuthService에서만 사용되므로, 이 필드는 제거하는 것이 권장됩니다.
     private final RedisService redisService;
 
-    private String generateUniqueParentCode(){
+    /**
+     * 중복되지 않는 4자리 부모 회원 코드를 생성합니다. (DB 검사)
+     */
+    private String generateUniqueParentCode() {
         String code;
         do {
             code = String.format("%04d", ThreadLocalRandom.current().nextInt(10000));
@@ -33,76 +37,89 @@ public class UserServiceImpl implements UserService {
         return code;
     }
 
-    @Override
-    public void preSignup(UserSignUpRequest request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
-        String formattedBirthDate = parsed.toString();
-
-        UserSignUpRequest fixedRequest = new UserSignUpRequest(
-                request.name(),
-                formattedBirthDate,
-                request.phoneNumber(),
-                request.gender(),
-                request.role(),
-                request.parentCode()
-        );
-        // 회원정보 Redis에 임시 저장 (TTL 5분)
-        redisService.setData("preuser:" + request.phoneNumber(), fixedRequest, 5);
-    }
-
+    /**
+     * 회원가입 API: 사용자 정보를 DB에 PENDING/INACTIVE 상태로 저장합니다.
+     */
     @Override
     @Transactional
-    public UserResponseDto confirmSignup(String phoneNumber) {
-        // 인증 여부 확인
-        Boolean verified = redisService.getData("verified:" + phoneNumber, Boolean.class);
-        if (verified == null || !verified) {
-            throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
-        }
-
-        // 임시 저장된 사용자 정보 가져오기
-        UserSignUpRequest request = redisService.getData("preuser:" + phoneNumber, UserSignUpRequest.class);
-        if (request == null) {
-            throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
-        }
-
-        // 중복된 전화번호 확인
-        if(userRepository.existsByPhoneNumber(phoneNumber)){
+    public UserResponseDto signUp(UserSignUpRequest request) {
+        if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
             throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
 
-        // User 엔티티 저장
-        LocalDate parseBirthDate = LocalDate.parse(request.birthDate());
-        String generatePatentCode = null;
-        String connectedCode = null;
+        // DTO의 yyyyMMdd -> LocalDate 변환
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
-        if(request.role() == ERole.PARENT){
-            generatePatentCode = generateUniqueParentCode();
-        } else if (request.role() == ERole.USER){
-            String inputParentCode = request.parentCode();
-            if(inputParentCode==null || !userRepository.existsByParentCode(inputParentCode)){
-                throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
-            }
-        }
-
-
+        // User 엔티티 생성 및 DB 저장 (초기 상태 설정)
         User user = User.builder()
                 .name(request.name())
                 .phoneNumber(request.phoneNumber())
-                .role(request.role())
+                .role(ERole.PENDING)
                 .gender(request.gender())
-                .status(EUserStatus.ACTIVE)
-                .birthDate(parseBirthDate)
-                .parentCode(generatePatentCode)
-                .connectedParentCode(connectedCode)
+                .status(EUserStatus.INACTIVE)
+                .birthDate(parsed)
+                .parentCode(null)
+                .connectedParentCode(null)
                 .build();
 
         User savedUser = userRepository.save(user);
-
-        // 사용 후 redis 삭제
-        redisService.deleteData("verified:" + phoneNumber);
-        redisService.deleteData("preuser:" + phoneNumber);
-
         return UserResponseDto.from(savedUser);
+    }
+
+    /**
+     * 사용자 역할 선택 API: 미선택(PENDING) 상태에서 역할 확정 및 부모-자녀 연결을 수행합니다.
+     */
+    @Override
+    @Transactional
+    public UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode){
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+
+        // 역할 선택은 최초 1번만 허용
+        if(user.getRole() != ERole.PENDING){
+            throw new CustomException(GlobalErrorCode.ALREADY_ROLE_SELECTED);
+        }
+
+        String codeToIssue = null;
+        String codeToConnect = null;
+
+        if(role==ERole.PARENT){
+            codeToIssue = generateUniqueParentCode();
+        } else if(role==ERole.CHILD){
+            if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
+                throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
+            }
+            codeToConnect = parentCode;
+        } else {
+            throw new CustomException(GlobalErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        user.completeRoleSelection(role, codeToIssue, codeToConnect);
+        return UserResponseDto.from(user);
+    }
+
+
+    /**
+     * 회원 코드 생성 API: 인증된 부모 사용자의 회원 코드를 조회하거나 발급합니다.
+     */
+    @Override
+    @Transactional
+    public String issueOrGetParentCode(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+
+        // 부모 역할이 아닌 경우 접근 거부
+        if(user.getRole() != ERole.PARENT){
+            throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
+        }
+
+        // 코드가 이미 존재하면 조회
+        if(user.getParentCode()!=null){
+            return user.getParentCode();
+        }
+
+        // 코드가 없으면 새로 발급 및 저장
+        String newCode = generateUniqueParentCode();
+        user.setParentCode(newCode);
+        return newCode;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.dto.UserResponseDto;
+import com.example.moabackend.domain.user.dto.UserRoleSelectionRequest;
 import com.example.moabackend.domain.user.dto.UserSignUpRequest;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.code.ApiResponse;
@@ -8,7 +9,11 @@ import com.example.moabackend.global.code.GlobalSuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,25 +22,23 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * [1단계] 회원 정보 입력 (임시 저장)
-     * - 사용자가 입력한 회원 정보를 Redis에 5분간 저장
-     * - 인증번호 검증이 완료되기 전까지는 DB에 저장하지 않음
+     * 회원가입 API: 사용자 기본 정보 입력 및 계정 생성
      */
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<String>> preSignup(@Valid @RequestBody UserSignUpRequest request) {
-        userService.preSignup(request);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, "회원 정보 임시 저장 완료");
+    public ResponseEntity<ApiResponse<UserResponseDto>> signUp(@Valid @RequestBody UserSignUpRequest request) {
+        UserResponseDto response = userService.signUp(request);
+        return ApiResponse.success(GlobalSuccessCode.CREATED, response);
     }
 
     /**
-     * [4단계] 최종 회원가입 확정
-     * - 인증번호 검증이 성공한 상태(verified:{phoneNumber}=true)인지 확인
-     * - Redis에 저장된 임시 회원 정보를 DB에 영구 저장
-     * - 성공 시 최종 회원 정보 반환
+     * 사용자 역할 선택 API: 로그인 후 역할 및 부모-자녀 연결 (최초 1회)
      */
-    @PostMapping("/signup-confirm")
-    public ResponseEntity<ApiResponse<UserResponseDto>> confirmSignup(@RequestParam String phoneNumber) {
-        UserResponseDto response = userService.confirmSignup(phoneNumber);
-        return ApiResponse.success(GlobalSuccessCode.CREATED, response);
+    @PostMapping("/select-role")
+    public ResponseEntity<ApiResponse<UserResponseDto>> selectUserRole(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserRoleSelectionRequest request) {
+
+        UserResponseDto response = userService.selectRoleAndLinkParent(userId, request.getRole(), request.getParentCode());
+        return ApiResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 }
