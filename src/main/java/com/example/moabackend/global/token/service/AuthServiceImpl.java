@@ -16,7 +16,7 @@ public class AuthServiceImpl implements AuthService {
     // 인증 코드 생성
     @Override
     public String generateAuthCode(String phoneNumber) {
-        String code = String.format("%06d", new Random().nextInt(1000000));
+        String code = String.format("%04d", new Random().nextInt(1000000));
         stringRedisTemplate.opsForValue()
                 .set("auth: " + phoneNumber, code, 5, TimeUnit.MINUTES);
         return code;

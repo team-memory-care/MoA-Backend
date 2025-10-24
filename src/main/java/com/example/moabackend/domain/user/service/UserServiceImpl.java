@@ -10,6 +10,7 @@ import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponseDto confirmSignup(String phoneNumber) {
         // 인증 여부 확인
         Boolean verified = redisService.getData("verified:" + phoneNumber, Boolean.class);
