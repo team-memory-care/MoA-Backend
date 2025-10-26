@@ -26,14 +26,14 @@ public class User {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "phone_number", nullable = false)
+    @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(name = "role", nullable = false)
+    @Column(name = "role", nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     private EUserStatus status;
 

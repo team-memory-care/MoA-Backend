@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
         // [NOTE] String.format("%04d", ...)가 4자리 코드를 생성하므로, nextInt 범위는 10000 이하가 적절합니다.
         String code = String.format("%04d", new Random().nextInt(10000));
         stringRedisTemplate.opsForValue()
-                .set("auth:" + phoneNumber, code, 5, TimeUnit.MINUTES);
+                .set("auth:" + phoneNumber, code, 120, TimeUnit.MINUTES);
         return code;
     }
 
