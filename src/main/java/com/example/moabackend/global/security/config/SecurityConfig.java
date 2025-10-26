@@ -40,8 +40,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request
+                                .requestMatchers("/api/auth/login", "/api/users/signup").permitAll()
+                                .requestMatchers("/api/auth/code/issue").permitAll()
                                 .requestMatchers(Constants.NO_NEED_AUTH.toArray(String[]::new)).permitAll()
-                                .requestMatchers("/api/**").hasAnyRole("USER", "PARENT", "ADMIN")
+                                .requestMatchers("/api/users/select-role").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN")
+                                .requestMatchers("/api/**").hasAnyRole("CHILD", "PARENT", "ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
