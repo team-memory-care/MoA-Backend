@@ -8,8 +8,8 @@ import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
-import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +19,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    // NOTE: RedisService는 현재 AuthService에서만 사용되므로, 이 필드는 제거하는 것이 권장됩니다.
-    private final RedisService redisService;
 
     /**
      * 중복되지 않는 4자리 부모 회원 코드를 생성합니다. (DB 검사)
@@ -97,7 +96,6 @@ public class UserServiceImpl implements UserService {
         user.completeRoleSelection(role, codeToIssue, codeToConnect);
         return UserResponseDto.from(user);
     }
-
 
     /**
      * 회원 코드 생성 API: 인증된 부모 사용자의 회원 코드를 조회하거나 발급합니다.

@@ -1,9 +1,12 @@
 package com.example.moabackend.global.token.service;
 
+import com.example.moabackend.domain.user.dto.UserSecurityForm;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.security.dto.JwtDTO;
+import com.example.moabackend.global.security.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     /**
      * 인증 코드를 생성하고 Redis에 저장합니다.
@@ -50,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     @Transactional // 사용자 상태 변경(activate)을 포함하므로 쓰기 트랜잭션 필요
-    public String login(String phoneNumber, String authCode) {
+    public Object login(String phoneNumber, String authCode) {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
@@ -66,9 +70,10 @@ public class AuthServiceImpl implements AuthService {
             // 인증 성공: User 상태 ACTIVE로 변경 (더티 체킹)
             user.activate();
 
-            // TODO: 실제 JWT 토큰 발급 로직으로 대체 필요
-            // return jwtTokenProvider.generateToken(UserSecurityForm.from(user));
-            return "JWT_TOKEN_FOR_" + user.getId();
+            // 1. JWT에 담을 사용자 정보 추출
+            UserSecurityForm securityForm = UserSecurityForm.from(user);
+            // 2. Access Token과 Refresh Token을 포함하는 DTO 생성 및 반환
+            return jwtUtil.generateTokens(user.getId(), user.getRole());
         }
     }
 }

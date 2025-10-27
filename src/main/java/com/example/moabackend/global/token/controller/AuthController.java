@@ -3,6 +3,7 @@ package com.example.moabackend.global.token.controller;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
+import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.token.service.AuthServiceImpl;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,15 @@ public class AuthController {
      * - authCode가 없으면 인증번호를 발송하고, 있으면 검증 후 로그인 처리.
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(
+    public ResponseEntity<? extends ApiResponse<? extends Object>> login(
             @RequestParam @NotNull(message = "전화번호는 필수입니다.") String phoneNumber,
             @RequestParam(required = false) String authCode) {
-        String result = authService.login(phoneNumber, authCode);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, result);
+        Object result = authService.login(phoneNumber, authCode);
+
+        if(result instanceof String){
+            return ApiResponse.<String>success(GlobalSuccessCode.SUCCESS, (String) result);
+        }
+        return ApiResponse.<JwtDTO>success(GlobalSuccessCode.SUCCESS, (JwtDTO) result);
     }
 
     /**
