@@ -9,7 +9,6 @@ import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.security.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
