@@ -1,3 +1,4 @@
+// src/main/java/com/example.moabackend.global.token.service/AuthServiceImpl.java
 package com.example.moabackend.global.token.service;
 
 import com.example.moabackend.domain.user.code.UserErrorCode;
@@ -9,6 +10,7 @@ import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.security.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,6 +95,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
+        // 1. 인증 코드 검증
         if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
