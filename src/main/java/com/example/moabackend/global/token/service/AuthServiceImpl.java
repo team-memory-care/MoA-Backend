@@ -95,7 +95,6 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        // 1. 인증 코드 검증
         if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }

@@ -13,6 +13,7 @@ import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
