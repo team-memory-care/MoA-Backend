@@ -52,6 +52,10 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Twilio
+    implementation 'com.twilio.sdk:twilio:9.13.1'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.30'
 }
 
 tasks.named('test') {

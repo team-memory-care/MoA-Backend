@@ -1,7 +1,5 @@
 package com.example.moabackend.global.token.service;
 
-import com.example.moabackend.global.security.dto.JwtDTO;
-
 public interface AuthService {
     // 인증 코드 생성
     String generateAuthCode(String phoneNumber);

@@ -1,6 +1,5 @@
 package com.example.moabackend.global.security.config;
 
-import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.security.filter.JwtAuthenticationFilter;
 import com.example.moabackend.global.security.filter.JwtExceptionFilter;
 import com.example.moabackend.global.security.handler.exception.CustomAccessDeniedHandler;
@@ -40,11 +39,21 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers("/api/auth/login", "/api/users/signup").permitAll()
-                                .requestMatchers("/api/auth/code/issue").permitAll()
-                                .requestMatchers(Constants.NO_NEED_AUTH.toArray(String[]::new)).permitAll()
+                                .requestMatchers(
+                                        "/api/users/sms/request",
+                                        "/api/users/signup",
+                                        "/api/auth/sms/request",
+                                        "/api/auth/login",
+                                        "/api/auth/code/issue",
+                                        "/api/users/select-role",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**")
+                                .permitAll()
                                 .requestMatchers("/api/users/select-role").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN")
+
+                                .requestMatchers("/api/**").authenticated() // hasAnyRole보다 authenticated()가 더 명확
                                 .requestMatchers("/api/**").hasAnyRole("CHILD", "PARENT", "ADMIN")
+
                                 .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

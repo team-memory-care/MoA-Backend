@@ -8,6 +8,8 @@ import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.token.service.AuthService;
+import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AuthService authService;
+    private final RedisService redisService;
+    private static final long SIGNUP_TTL_MINUTES = 5;
 
     /**
      * 중복되지 않는 4자리 부모 회원 코드를 생성합니다. (DB 검사)
@@ -37,20 +42,39 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 회원가입 API: 사용자 정보를 DB에 PENDING/INACTIVE 상태로 저장합니다.
+     * [회원가입 1단계] 사용자 정보를 Redis에 임시 저장하고 인증 코드를 발송합니다.
      */
     @Override
     @Transactional
-    public UserResponseDto signUp(UserSignUpRequest request) {
+    public String preSignUpAndSendCode(UserSignUpRequest request) {
         if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
             throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
 
-        // DTO의 yyyyMMdd -> LocalDate 변환
+        String redisKey = "signUp:temp:" + request.phoneNumber();
+        redisService.setData(redisKey, request, SIGNUP_TTL_MINUTES);
+
+        return authService.generateAuthCode(request.phoneNumber());
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto confirmSignUp(String phoneNumber, String authCode) {
+        if (!authService.verifyAuthCode(phoneNumber, authCode)) {
+            throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
+        }
+
+        String redisKey = "signup:temp:" + phoneNumber;
+        UserSignUpRequest request = redisService.getData(redisKey, UserSignUpRequest.class);
+
+        if (request == null) {
+            throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
+        }
+        redisService.deleteData(redisKey);
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
-        // User 엔티티 생성 및 DB 저장 (초기 상태 설정)
         User user = User.builder()
                 .name(request.name())
                 .phoneNumber(request.phoneNumber())
@@ -71,20 +95,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode){
+    public UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode) {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         // 역할 선택은 최초 1번만 허용
-        if(user.getRole() != ERole.PENDING){
+        if (user.getRole() != ERole.PENDING) {
             throw new CustomException(GlobalErrorCode.ALREADY_ROLE_SELECTED);
         }
 
         String codeToIssue = null;
         String codeToConnect = null;
 
-        if(role==ERole.PARENT){
+        if (role == ERole.PARENT) {
             codeToIssue = generateUniqueParentCode();
-        } else if(role==ERole.CHILD){
+        } else if (role == ERole.CHILD) {
             if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
                 throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
             }
@@ -102,16 +126,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public String issueOrGetParentCode(Long userId){
+    public String issueOrGetParentCode(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         // 부모 역할이 아닌 경우 접근 거부
-        if(user.getRole() != ERole.PARENT){
+        if (user.getRole() != ERole.PARENT) {
             throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
         }
 
         // 코드가 이미 존재하면 조회
-        if(user.getParentCode()!=null){
+        if (user.getParentCode() != null) {
             return user.getParentCode();
         }
 
