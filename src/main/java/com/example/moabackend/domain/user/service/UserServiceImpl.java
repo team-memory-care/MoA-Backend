@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
                 .status(EUserStatus.INACTIVE)
                 .birthDate(parsed)
                 .parentCode(null)
-                .connectedParentCode(null)
+                .connectedParentCode(request.parentCode())
                 .build();
 
         User savedUser = userRepository.save(user);
