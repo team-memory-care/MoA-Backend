@@ -1,8 +1,8 @@
 // src/main/java/com/example.moabackend.global.token.service/AuthServiceImpl.java
 package com.example.moabackend.global.token.service;
 
-import com.example.moabackend.domain.user.dto.UserSecurityForm;
 import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
@@ -27,7 +27,11 @@ public class AuthServiceImpl implements AuthService {
     private final CoolSmsService coolSmsService;
     private final SecureRandom secureRandom = new SecureRandom();
     private static final long CODE_TTL_SECONDS = 300;
+    private static final String AUTH_CODE_PREFIX = "auth:";
 
+    public JwtDTO generateTokensForUser(User user) {
+        return jwtUtil.generateTokens(user.getId(), user.getRole());
+    }
 
     /**
      * 인증 코드를 생성, Redis에 저장하고 CoolSMS로 발송합니다.
@@ -71,16 +75,14 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        // 1. 인증 코드 검증
         if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
         }
 
-        // 2. 인증 성공: User 상태 ACTIVE로 변경 (더티 체킹)
-        user.activate();
+        if (user.getStatus() != EUserStatus.ACTIVE) {
+            user.activate();
+        }
 
-        // 3. JWT에 담을 사용자 정보 추출 및 토큰 반환
-        UserSecurityForm securityForm = UserSecurityForm.from(user);
-        return jwtUtil.generateTokens(user.getId(), user.getRole());
+        return generateTokensForUser(user);
     }
 }

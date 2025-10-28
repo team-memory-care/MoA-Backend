@@ -5,13 +5,16 @@ import com.example.moabackend.domain.user.dto.UserResponseDto;
 import com.example.moabackend.domain.user.dto.UserRoleSelectionRequest;
 import com.example.moabackend.domain.user.dto.UserSignUpRequest;
 import com.example.moabackend.domain.user.service.UserService;
+import com.example.moabackend.global.annotation.UserId;
 import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
+import com.example.moabackend.global.security.dto.JwtDTO;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,36 +23,29 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    /**
-     * [회원가입 1단계]
-     * 사용자가 입력한 기본 정보(DTO 전체)를 Redis에 임시 저장하고, 전화번호로 인증 코드 SMS를 발송 요청합니다.
-     */
-    @PostMapping("/sms/request")
-    @ResponseStatus(HttpStatus.ACCEPTED) // 202 Accepted: 요청 수락
+    @Tag(name = "회원가입 1단계: 회원가입 시작 및 SMS 발송")
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<ApiResponse<String>> preSignUpAndSendCode(@Valid @RequestBody UserSignUpRequest request) {
         userService.preSignUpAndSendCode(request);
         return ApiResponse.success(GlobalSuccessCode.SUCCESS, "인증코드가 발송되었습니다.");
     }
 
-    /**
-     * [회원가입 2단계]
-     * 수신한 인증 코드를 검증하고, Redis의 임시 정보를 꺼내 DB에 최종적으로 사용자 계정을 생성합니다.
-     */
-    @PostMapping("/signup")
+    @Tag(name = "회원가입 2단계: 최종 회원가입 및 토큰 발행")
+    @PostMapping("/signup/{phoneNumber}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ApiResponse<UserResponseDto>> confirmSignUp(
+    public ResponseEntity<ApiResponse<JwtDTO>> confirmSignUp(
+            @PathVariable @Pattern(regexp = "^010\\d{8}$", message = "전화번호는 010으로 시작하는 11자리 숫자여야 합니다.") String phoneNumber,
             @Valid @RequestBody SignUpConfirmationRequest request) {
-        UserResponseDto response = userService.confirmSignUp(request.phoneNumber(), request.authCode());
-        return ApiResponse.success(GlobalSuccessCode.CREATED, response);
+        JwtDTO jwt = userService.confirmSignUpAndLogin(phoneNumber, request.authCode());
+        return ApiResponse.success(GlobalSuccessCode.CREATED, jwt);
     }
 
-    /**
-     * [역할 확정]
-     * 계정 생성 후, PENDING 상태의 사용자가 최초로 로그인했을 때 PARENT나 CHILD 역할을 확정하고, 부모 코드를 연결합니다. (최초 1회 실행)
-     */
+    @Tag(name = "회원가입 3단계: 역할 선택")
+
     @PostMapping("/select-role")
     public ResponseEntity<ApiResponse<UserResponseDto>> selectUserRole(
-            @AuthenticationPrincipal Long userId,
+            @UserId Long userId,
             @Valid @RequestBody UserRoleSelectionRequest request) {
 
         UserResponseDto response = userService.selectRoleAndLinkParent(userId, request.getRole(), request.getParentCode());

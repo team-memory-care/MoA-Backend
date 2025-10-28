@@ -9,6 +9,7 @@ import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.token.service.AuthService;
 import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto confirmSignUp(String phoneNumber, String authCode) {
+    public JwtDTO confirmSignUpAndLogin(String phoneNumber, String authCode) {
         // 1. 인증 코드 검증 (Redis 비교 및 삭제)
         if (!authService.verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
@@ -71,7 +72,6 @@ public class UserServiceImpl implements UserService {
         UserSignUpRequest request = redisService.getData(redisKey, UserSignUpRequest.class);
 
         if (request == null) {
-            // 인증 코드는 맞았으나, 임시 정보가 만료된 경우
             throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
         }
         redisService.deleteData(redisKey);
@@ -83,16 +83,16 @@ public class UserServiceImpl implements UserService {
         User user = User.builder()
                 .name(request.name())
                 .phoneNumber(request.phoneNumber())
-                .role(ERole.PENDING)
+                .role(request.role())
                 .gender(request.gender())
-                .status(EUserStatus.INACTIVE)
+                .status(EUserStatus.ACTIVE)
                 .birthDate(parsed)
                 .parentCode(null)
                 .connectedParentCode(request.parentCode())
                 .build();
 
         User savedUser = userRepository.save(user);
-        return UserResponseDto.from(savedUser);
+        return authService.generateTokensForUser(savedUser);
     }
 
     /**
@@ -134,17 +134,14 @@ public class UserServiceImpl implements UserService {
     public String issueOrGetParentCode(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        // 부모 역할이 아닌 경우 접근 거부
         if (user.getRole() != ERole.PARENT) {
             throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
         }
 
-        // 코드가 이미 존재하면 조회
         if (user.getParentCode() != null) {
             return user.getParentCode();
         }
 
-        // 코드가 없으면 새로 발급 및 저장
         String newCode = generateUniqueParentCode();
         user.setParentCode(newCode);
         return newCode;
