@@ -22,6 +22,14 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://company/com/maven2")
+    }
+    maven { url 'https://jitpack.io' }
+    mavenLocal()
+    flatDir {
+        dirs "libs"
+    }
 }
 
 dependencies {
@@ -53,8 +61,10 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // Twilio
-    implementation 'com.twilio.sdk:twilio:9.13.1'
+    // CoolSMS Java SDK (Nurigo)
+    implementation 'net.nurigo:sdk:4.3.0'
+
+    // Google Libphonenumber 추가 (전화번호 포맷팅을 위해 필수적)
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.30'
 }
 
