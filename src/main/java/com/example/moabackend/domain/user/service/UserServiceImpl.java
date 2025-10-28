@@ -1,3 +1,4 @@
+// src/main/java/com/example/moabackend.domain.user.service/UserServiceImpl.java
 package com.example.moabackend.domain.user.service;
 
 import com.example.moabackend.domain.user.dto.UserResponseDto;
@@ -51,7 +52,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
 
-        String redisKey = "signUp:temp:" + request.phoneNumber();
+        String redisKey = "signup:temp:" + request.phoneNumber();
         redisService.setData(redisKey, request, SIGNUP_TTL_MINUTES);
 
         return authService.generateAuthCode(request.phoneNumber());
@@ -60,18 +61,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto confirmSignUp(String phoneNumber, String authCode) {
+        // 1. 인증 코드 검증 (Redis 비교 및 삭제)
         if (!authService.verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
         }
 
+        // 2. Redis에서 임시 DTO 조회
         String redisKey = "signup:temp:" + phoneNumber;
         UserSignUpRequest request = redisService.getData(redisKey, UserSignUpRequest.class);
 
         if (request == null) {
+            // 인증 코드는 맞았으나, 임시 정보가 만료된 경우
             throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
         }
         redisService.deleteData(redisKey);
 
+        // 3. DB 저장
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
