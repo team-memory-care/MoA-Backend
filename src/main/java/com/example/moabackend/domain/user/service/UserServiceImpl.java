@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -107,10 +106,6 @@ public class UserServiceImpl implements UserService {
 
         // 3. DB 저장 (User 엔티티 생성)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        // UserSignUpRequest에는 전화번호, 역할, 부모코드가 없으므로, 이 정보를 인자로 받아야 합니다.
-        // 현재 코드에서는 DTO에서 제거했으나, 최종 가입 시 이 정보를 포함하여 전달해야 합니다.
-        // 임시 DTO에 전화번호 정보를 추가하고, 역할을 PENDING으로 초기화하도록 임시 변경합니다.
-
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
         if(request.role() == ERole.PARENT){
@@ -160,7 +155,7 @@ public class UserServiceImpl implements UserService {
         String codeToConnect = null;
 
         if (role == ERole.PARENT) {
-            codeToIssue = generateUniqueParentCode(); // 동시성 위험이 있는 메서드
+            codeToIssue = generateUniqueParentCode();
         } else if (role == ERole.CHILD) {
             if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
                 throw new CustomException(UserErrorCode.INVALID_PARENT_CODE);
@@ -190,7 +185,7 @@ public class UserServiceImpl implements UserService {
             return user.getParentCode();
         }
 
-        String newCode = generateUniqueParentCode(); // 동시성 위험이 있는 메서드
+        String newCode = generateUniqueParentCode();
         user.setParentCode(newCode);
         return newCode;
     }

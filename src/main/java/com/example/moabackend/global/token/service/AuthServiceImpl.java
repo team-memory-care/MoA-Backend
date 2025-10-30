@@ -1,4 +1,3 @@
-// src/main/java/com/example.moabackend.global.token.service/AuthServiceImpl.java
 package com.example.moabackend.global.token.service;
 
 import com.example.moabackend.domain.user.code.UserErrorCode;

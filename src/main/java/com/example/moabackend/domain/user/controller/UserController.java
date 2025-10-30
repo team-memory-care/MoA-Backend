@@ -13,8 +13,6 @@ import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -57,13 +55,5 @@ public class UserController {
         // 3단계: 인증된 사용자(userId)의 역할(PARENT/CHILD) 확정 및 부모-자녀 연결
         UserResponseDto response = userService.selectRoleAndLinkParent(userId, request.role(), request.parentCode());
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
-    }
-
-    // 전화번호만 받는 DTO 정의 (클래스 분리도 가능)
-    public record PhoneNumberRequest(
-            @NotBlank(message = "전화번호는 필수 입력값입니다.")
-            @Pattern(regexp = "^010\\d{8}$", message = "전화번호는 010으로 시작하는 11자리 숫자여야 합니다.")
-            String phoneNumber
-    ) {
     }
 }
