@@ -32,7 +32,6 @@ public enum GlobalErrorCode implements ErrorCode {
     TOKEN_UNSUPPORTED_ERROR(HttpStatus.UNAUTHORIZED, "지원하지않는 토큰입니다."),
     EXPIRED_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     TOKEN_UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
-    REDIS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 작업 중 오류가 발생했습니다."), // NOTE: 401 -> 500 INTERNAL_SERVER_ERROR 권장
     INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않거나 만료되었습니다."), // NOTE: 인증번호 불일치와 만료를 분리하여 사용 권장
 
     // 인증번호 만료
@@ -61,6 +60,7 @@ public enum GlobalErrorCode implements ErrorCode {
      * 500 : 응답 실패 (Internal Server Error)
      */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버와의 연결에 실패했습니다."),
+    REDIS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 작업 중 오류가 발생했습니다."),
     BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "다른 서버로부터 잘못된 응답이 수신되었습니다."),
     INSUFFICIENT_STORAGE(HttpStatus.INSUFFICIENT_STORAGE, "서버의 용량이 부족해 요청에 실패했습니다."),
     UNSUPPORTED_ENCODING(HttpStatus.INTERNAL_SERVER_ERROR, "지원하지 않는 인코딩입니다."),

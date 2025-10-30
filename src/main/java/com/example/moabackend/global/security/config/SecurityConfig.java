@@ -41,15 +41,15 @@ public class SecurityConfig {
                         request
                                 .requestMatchers(
                                         "/api/users/register",
-                                        "/api/users/signup",
-                                        "/api/users/verify-phone/request",
+                                        "/api/users/register/code-request",
+                                        "/api/users/register/code-complete",
                                         "/api/auth/sms/request",
                                         "/api/auth/login",
                                         "/api/auth/code/issue",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/api/users/select-role").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN")
+                                .requestMatchers("/api/users/register/select-role").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN") //
 
                                 .anyRequest().authenticated()
                 )
