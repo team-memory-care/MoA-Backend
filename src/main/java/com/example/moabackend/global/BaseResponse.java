@@ -1,6 +1,7 @@
 package com.example.moabackend.global;
 
 import com.example.moabackend.global.code.ErrorCode;
+import com.example.moabackend.global.code.SuccessCode;
 import lombok.Builder;
 
 public record BaseResponse<T>(
@@ -16,6 +17,14 @@ public record BaseResponse<T>(
         return BaseResponse.<T>builder()
                 .success(Boolean.TRUE)
                 .message("요청에 대해 정상적으로 처리되었습니다.")
+                .data(data)
+                .build();
+    }
+
+    public static <T> BaseResponse<T> success(SuccessCode s, T data) {
+        return BaseResponse.<T>builder()
+                .success(Boolean.TRUE)
+                .message(s.getMessage())
                 .data(data)
                 .build();
     }
