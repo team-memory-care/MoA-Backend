@@ -13,11 +13,4 @@ public record UserRoleSelectionRequest(
         @Pattern(regexp = "^\\d{4}$", message = "부모 회원코드는 4자리 숫자여야 합니다.")
         String parentCode
 ) {
-    public ERole getRole() {
-        return role;
-    }
-
-    public String getParentCode() {
-        return parentCode;
-    }
 }
