@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/api/users/register",
                                         "/api/users/signup",
+                                        "/api/users/verify-phone/request",
                                         "/api/auth/sms/request",
                                         "/api/auth/login",
                                         "/api/auth/code/issue",

@@ -6,9 +6,13 @@ import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.security.dto.JwtDTO;
 
 public interface UserService {
-    // [회원가입 1단계] 사용자 정보를 Redis에 임시 저장하고 인증 코드를 발송
-    String preSignUpAndSendCode(UserSignUpRequest request);
+    // [회원가입 1단계] 사용자 기본 정보를 Redis에 임시 저장
+    void preSignUp(UserSignUpRequest request);
 
+    // [회원가입 2단계-1] 전화번호 중복 체크 및 인증 코드 발송
+    String requestSignUpSms(String phoneNumber);
+
+    // [회원가입 2단계-2] 최종 회원가입 및 토큰 발행
     JwtDTO confirmSignUpAndLogin(String phoneNumber, String authCode);
 
     // [사용자 선택 API] 역할 확정 및 부모 코드 연결 (최초 1회)
