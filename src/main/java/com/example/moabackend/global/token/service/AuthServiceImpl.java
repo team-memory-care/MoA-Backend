@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final CoolSmsService coolSmsService;
     private final SecureRandom secureRandom = new SecureRandom();
     private static final long CODE_TTL_SECONDS = 300;
-    private static final String AUTH_CODE_PREFIX = "auth:"; // ✅ 키 상수 통일
+    private static final String AUTH_CODE_PREFIX = "auth:";
 
     public JwtDTO generateTokensForUser(User user) {
         return jwtUtil.generateTokens(user.getId(), user.getRole());
@@ -54,7 +54,6 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateAuthCode(String phoneNumber) {
-        // 🚨 로그인 보안 강화: 등록된 사용자만 코드를 받을 수 있도록 검증
         if (!userRepository.existsByPhoneNumber((phoneNumber))) {
             throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
         }
@@ -76,10 +75,8 @@ public class AuthServiceImpl implements AuthService {
      * 제출된 인증 코드를 Redis에 저장된 코드와 비교 검증합니다.
      */
     public boolean verifyAuthCode(String phoneNumber, String inputCode) {
-        // ✅ 키 통일: AUTH_CODE_PREFIX 상수 사용
         String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + phoneNumber);
 
-        // 코드 일치 확인 및 Redis 키 삭제 (일회성 사용)
         if (savedCode != null && savedCode.equals(inputCode)) {
             stringRedisTemplate.delete(AUTH_CODE_PREFIX + phoneNumber);
             return true;
@@ -91,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
      * 로그인 통합 처리: 인증 코드 검증 후 토큰 발급을 수행합니다.
      */
     @Override
-    @Transactional // 사용자 상태 변경(activate)을 포함하므로 쓰기 트랜잭션 필요
+    @Transactional
     public JwtDTO login(String phoneNumber, String authCode) {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
