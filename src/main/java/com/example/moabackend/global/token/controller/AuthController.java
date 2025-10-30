@@ -25,7 +25,6 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
 
-
     /**
      * [로그인]
      * 전화번호와 인증 코드를 검증하고, 성공 시 Access/Refresh JWT 토큰을 발급하여 클라이언트에게 반환합니다.
