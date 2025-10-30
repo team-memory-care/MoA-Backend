@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "회원가입 및 사용자 관리", description = "단계별 회원가입, 역할 선택, 사용자 정보 관리 API")
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
 
-    @Tag(name = "회원가입 1단계: 기본 정보 임시 저장")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<ApiResponse<String>> preSignUp(@Valid @RequestBody UserSignUpRequest request) {
@@ -28,7 +28,6 @@ public class UserController {
         return ApiResponse.success(GlobalSuccessCode.SUCCESS, "회원가입 기본 정보가 임시 저장되었습니다.");
     }
 
-    @Tag(name = "회원가입 2단계-1: 전화번호 인증 코드 발송")
     @PostMapping("/register/code-request")
     public ResponseEntity<ApiResponse<String>> requestSignUpSms(@Valid @RequestBody PhoneNumberRequest request) {
         // 2-1단계: 전화번호 중복 체크 후, 회원가입용 인증 코드를 발송
@@ -36,7 +35,6 @@ public class UserController {
         return ApiResponse.success(GlobalSuccessCode.SUCCESS, "인증코드가 발송되었습니다. 유효시간 5분.");
     }
 
-    @Tag(name = "회원가입 2단계-2: 인증 코드를 통한 최종 회원가입 및 토큰 발행")
     @PostMapping("/register/code-complete")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ApiResponse<JwtDTO>> confirmSignUp(
@@ -46,7 +44,6 @@ public class UserController {
         return ApiResponse.success(GlobalSuccessCode.CREATED, jwt);
     }
 
-    @Tag(name = "회원가입 3단계: 역할 선택")
     @PostMapping("/register/select-role")
     public ResponseEntity<ApiResponse<UserResponseDto>> selectUserRole(
             @UserId Long userId,
