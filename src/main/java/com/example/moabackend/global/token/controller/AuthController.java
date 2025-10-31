@@ -1,6 +1,7 @@
 package com.example.moabackend.global.token.controller;
 
 import com.example.moabackend.domain.user.service.UserService;
+import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
@@ -30,11 +31,11 @@ public class AuthController {
      * 전화번호와 인증 코드를 검증하고, 성공 시 Access/Refresh JWT 토큰을 발급하여 클라이언트에게 반환합니다.
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<JwtDTO>> login(
+    public ResponseEntity<BaseResponse<JwtDTO>> login(
             @RequestParam @NotNull(message = "전화번호는 필수입니다.") String phoneNumber,
             @RequestParam @NotNull(message = "인증 코드는 필수입니다.") String authCode) {
         JwtDTO jwt = authService.login(phoneNumber, authCode);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, jwt);
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.SUCCESS, jwt);
     }
 
     /**
@@ -43,10 +44,10 @@ public class AuthController {
      */
 
     @PostMapping("/sms/request")
-    public ResponseEntity<ApiResponse<String>> requestLoginSms(
+    public ResponseEntity<BaseResponse<String>> requestLoginSms(
             @RequestParam @NotNull(message = "전화번호는 필수입니다.") String phoneNumber) {
         authService.generateAuthCode(phoneNumber);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, "로그인 인증 코드가 발송되었습니다.");
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.AUTH_CODE_SENT, null);
     }
 
     /**
@@ -54,8 +55,8 @@ public class AuthController {
      * 로그인 및 인증이 완료된 부모 사용자가 자신의 4자리 회원 코드를 조회하거나, 코드가 없을 경우 새로 발급받을 때 사용됩니다.
      */
     @PostMapping("/code/issue")
-    public ResponseEntity<ApiResponse<String>> issueParentCode(@AuthenticationPrincipal Long userId) {
+    public ResponseEntity<BaseResponse<String>> issueParentCode(@AuthenticationPrincipal Long userId) {
         String code = userService.issueOrGetParentCode(userId);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, code);
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.SUCCESS, code);
     }
 }
