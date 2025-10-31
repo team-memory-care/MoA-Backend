@@ -2,6 +2,7 @@ package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.dto.*;
 import com.example.moabackend.domain.user.service.UserService;
+import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
 import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
@@ -22,34 +23,34 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<ApiResponse<String>> preSignUp(@Valid @RequestBody UserSignUpRequest request) {
+    public ResponseEntity<BaseResponse<String>> preSignUp(@Valid @RequestBody UserSignUpRequest request) {
         // 1단계: 기본 정보와 전화번호를 Redis에 임시 저장 (전화번호를 Redis 키로 사용)
         userService.preSignUp(request);
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, "회원가입 기본 정보가 임시 저장되었습니다.");
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.USER_REGISTER_TEMP_SAVED, null);
     }
 
     @PostMapping("/register/code-request")
-    public ResponseEntity<ApiResponse<String>> requestSignUpSms(@Valid @RequestBody PhoneNumberRequest request) {
+    public ResponseEntity<BaseResponse<String>> requestSignUpSms(@Valid @RequestBody PhoneNumberRequest request) {
         // 2-1단계: 전화번호 중복 체크 후, 회원가입용 인증 코드를 발송
         userService.requestSignUpSms(request.phoneNumber());
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, "인증코드가 발송되었습니다. 유효시간 5분.");
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.AUTH_CODE_SENT, null);
     }
 
     @PostMapping("/register/code-complete")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ApiResponse<JwtDTO>> confirmSignUp(
+    public ResponseEntity<BaseResponse<JwtDTO>> confirmSignUp(
             @Valid @RequestBody SignUpConfirmationRequest request) {
         // 2-2단계: 인증 코드 검증 및 Redis 임시 데이터로 DB에 최종 사용자 생성, JWT 토큰 발행
         JwtDTO jwt = userService.confirmSignUpAndLogin(request.phoneNumber(), request.authCode());
-        return ApiResponse.success(GlobalSuccessCode.CREATED, jwt);
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.CREATED, jwt);
     }
 
     @PostMapping("/register/select-role")
-    public ResponseEntity<ApiResponse<UserResponseDto>> selectUserRole(
+    public ResponseEntity<BaseResponse<UserResponseDto>> selectUserRole(
             @UserId Long userId,
             @Valid @RequestBody UserRoleSelectionRequest request) {
         // 3단계: 인증된 사용자(userId)의 역할(PARENT/CHILD) 확정 및 부모-자녀 연결
         UserResponseDto response = userService.selectRoleAndLinkParent(userId, request.role(), request.parentCode());
-        return ApiResponse.success(GlobalSuccessCode.SUCCESS, response);
+        return BaseResponse.toResponseEntity(GlobalSuccessCode.SUCCESS, response);
     }
 }
