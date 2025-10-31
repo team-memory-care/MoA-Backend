@@ -4,7 +4,6 @@ import com.example.moabackend.domain.user.dto.*;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
-import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;

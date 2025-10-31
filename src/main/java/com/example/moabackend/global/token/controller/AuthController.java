@@ -2,11 +2,9 @@ package com.example.moabackend.global.token.controller;
 
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
-import com.example.moabackend.global.code.ApiResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.token.service.AuthService;
-import com.example.moabackend.global.token.service.AuthServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
