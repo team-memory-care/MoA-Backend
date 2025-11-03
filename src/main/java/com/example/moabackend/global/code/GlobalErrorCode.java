@@ -30,9 +30,6 @@ public enum GlobalErrorCode implements ErrorCode {
     TOKEN_UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "자격 증명이 이루어지지 않았습니다."), // NOTE: 권한 부족은 403 FORBIDDEN 권장
 
-    // 인증번호 만료
-    AUTH_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호가 만료되었습니다."),
-
     /**
      * 403 : 권한 부족 (Authorization)
      */
@@ -65,14 +62,6 @@ public enum GlobalErrorCode implements ErrorCode {
     UNSUPPORTED_ENCODING(HttpStatus.INTERNAL_SERVER_ERROR, "지원하지 않는 인코딩입니다."),
     ;
 
-    // 고유 코드 생성 실패 (서버 내부 문제)
-    CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "고유 코드 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-
     private final HttpStatus status;
     private final String message;
-
-    @Override
-    public String getCode() {
-        return this.name();
-    }
 }
