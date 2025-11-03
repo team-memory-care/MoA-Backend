@@ -1,7 +1,7 @@
 package com.example.moabackend.global.security.service;
 
 import com.example.moabackend.domain.user.dto.UserSecurityForm;
-import com.example.moabackend.domain.user.exception.UserErrorCode;
+import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.security.info.UserPrincipal;

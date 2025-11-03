@@ -1,5 +1,6 @@
 package com.example.moabackend.global.token.service;
 
+import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
@@ -20,13 +21,13 @@ import java.util.concurrent.TimeUnit;
 @Transactional(readOnly = true)
 public class AuthServiceImpl implements AuthService {
 
+    private static final long CODE_TTL_SECONDS = 300;
+    private static final String AUTH_CODE_PREFIX = "auth:";
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final CoolSmsService coolSmsService;
     private final SecureRandom secureRandom = new SecureRandom();
-    private static final long CODE_TTL_SECONDS = 300;
-    private static final String AUTH_CODE_PREFIX = "auth:";
 
     public JwtDTO generateTokensForUser(User user) {
         return jwtUtil.generateTokens(user.getId(), user.getRole());
@@ -94,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (!verifyAuthCode(phoneNumber, authCode)) {
-            throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
+            throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
 
         if (user.getStatus() != EUserStatus.ACTIVE) {

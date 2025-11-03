@@ -1,7 +1,8 @@
 package com.example.moabackend.domain.user.service;
 
-import com.example.moabackend.domain.user.dto.UserResponseDto;
-import com.example.moabackend.domain.user.dto.UserSignUpRequest;
+import com.example.moabackend.domain.user.code.UserErrorCode;
+import com.example.moabackend.domain.user.dto.res.UserResponseDto;
+import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
@@ -26,14 +27,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
+    private static final long SIGNUP_TTL_MINUTES = 5;
+    private static final String SIGNUP_TEMP_KEY_PREFIX = "signup:temp:";
     private final UserRepository userRepository;
     private final AuthService authService;
     private final RedisService redisService;
-    private static final long SIGNUP_TTL_MINUTES = 5;
-    private static final String SIGNUP_TEMP_KEY_PREFIX = "signup:temp:";
 
     /**
      * 중복되지 않는 4자리 부모 회원 코드를 생성합니다.
+     *
      * @return 고유한 4자리 숫자 코드
      */
     private String generateUniqueParentCode() {
@@ -45,7 +47,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         log.error("Failed to generate unique parent code after {} retries.", MAX_RETRIES);
-        throw new CustomException(GlobalErrorCode.CODE_GENERATION_FAILED);
+        throw new CustomException(UserErrorCode.CODE_GENERATION_FAILED);
     }
 
     /**
@@ -54,7 +56,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional // 쓰기 작업 필요
-    public void preSignUp(UserSignUpRequest request) {
+    public void preSignUp(UserSignUpRequestDto request) {
         // Redis 키를 전화번호로 통일하여 2단계에서 조회 가능하도록 보장
         String redisKey = SIGNUP_TEMP_KEY_PREFIX + request.phoneNumber();
         redisService.setData(redisKey, request, SIGNUP_TTL_MINUTES);
@@ -62,6 +64,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * [회원가입 2단계-1] 전화번호 중복 체크 및 인증 코드 발송을 처리합니다.
+     *
      * @return 발송 성공 메시지
      */
     @Override
@@ -83,16 +86,16 @@ public class UserServiceImpl implements UserService {
     public JwtDTO confirmSignUpAndLogin(String phoneNumber, String authCode) {
         // 1. 인증 코드 검증 (성공 시 Redis에서 코드 삭제)
         if (!authService.verifyAuthCode(phoneNumber, authCode)) {
-            throw new CustomException(GlobalErrorCode.INVALID_AUTH_CODE);
+            throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
 
         // 2. Redis에서 1단계 임시 데이터 로드
         String redisKey = SIGNUP_TEMP_KEY_PREFIX + phoneNumber;
-        UserSignUpRequest request = redisService.getData(redisKey, UserSignUpRequest.class);
+        UserSignUpRequestDto request = redisService.getData(redisKey, UserSignUpRequestDto.class);
 
         // Redis 데이터 만료 또는 누락 체크
         if (request == null) {
-            throw new CustomException(GlobalErrorCode.AUTH_CODE_EXPIRED);
+            throw new CustomException(UserErrorCode.AUTH_CODE_EXPIRED);
         }
         redisService.deleteData(redisKey); // 임시 데이터 최종 삭제
 
@@ -129,7 +132,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PENDING) {
-            throw new CustomException(GlobalErrorCode.ALREADY_ROLE_SELECTED);
+            throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
         }
 
         String codeToIssue = null;
@@ -139,11 +142,11 @@ public class UserServiceImpl implements UserService {
             codeToIssue = generateUniqueParentCode();
         } else if (role == ERole.CHILD) {
             if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
-                throw new CustomException(GlobalErrorCode.INVALID_PARENT_CODE);
+                throw new CustomException(UserErrorCode.INVALID_PARENT_CODE);
             }
             codeToConnect = parentCode;
         } else {
-            throw new CustomException(GlobalErrorCode.INVALID_INPUT_VALUE);
+            throw new CustomException(UserErrorCode.INVALID_INPUT_VALUE);
         }
 
         user.completeRoleSelection(role, codeToIssue, codeToConnect);

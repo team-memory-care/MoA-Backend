@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.handler.exception;
 
-import com.example.moabackend.domain.user.exception.UserErrorCode;
+import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.global.security.info.AuthenticationResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.example.moabackend.domain.user.dto;
+package com.example.moabackend.domain.user.dto.res;
 
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.ERole;

@@ -1,11 +1,11 @@
-package com.example.moabackend.domain.user.dto;
+package com.example.moabackend.domain.user.dto.req;
 
 import com.example.moabackend.domain.user.entity.type.ERole;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record UserRoleSelectionRequest(
+public record UserRoleSelectionRequestDto(
         @NotNull(message = "역할 선택은 필수입니다.")
         ERole role,
 
