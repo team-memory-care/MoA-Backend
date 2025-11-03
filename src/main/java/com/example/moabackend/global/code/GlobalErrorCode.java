@@ -28,12 +28,12 @@ public enum GlobalErrorCode implements ErrorCode {
     TOKEN_UNSUPPORTED_ERROR(HttpStatus.UNAUTHORIZED, "지원하지않는 토큰입니다."),
     EXPIRED_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     TOKEN_UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "자격 증명이 이루어지지 않았습니다."), // NOTE: 권한 부족은 403 FORBIDDEN 권장
 
     /**
      * 403 : 권한 부족 (Authorization)
      */
     INVALID_HEADER_VALUE(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
-    UNAUTHORIZED(HttpStatus.FORBIDDEN, "자격 증명이 이루어지지 않았습니다."), // NOTE: 권한 부족은 403 FORBIDDEN 권장
 
     /**
      * 404 : 리소스 없음 (Not Found)
