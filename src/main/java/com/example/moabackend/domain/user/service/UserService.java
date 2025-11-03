@@ -1,13 +1,13 @@
 package com.example.moabackend.domain.user.service;
 
-import com.example.moabackend.domain.user.dto.UserResponseDto;
-import com.example.moabackend.domain.user.dto.UserSignUpRequest;
+import com.example.moabackend.domain.user.dto.res.UserResponseDto;
+import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.security.dto.JwtDTO;
 
 public interface UserService {
     // [회원가입 1단계] 사용자 기본 정보를 Redis에 임시 저장
-    void preSignUp(UserSignUpRequest request);
+    void preSignUp(UserSignUpRequestDto request);
 
     // [회원가입 2단계-1] 전화번호 중복 체크 및 인증 코드 발송
     String requestSignUpSms(String phoneNumber);

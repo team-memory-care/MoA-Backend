@@ -1,11 +1,11 @@
-package com.example.moabackend.domain.user.dto;
+package com.example.moabackend.domain.user.dto.req;
 
 import com.example.moabackend.domain.user.entity.type.EUserGender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public record UserSignUpRequest(
+public record UserSignUpRequestDto(
         @NotBlank(message = "이름은 필수 입력값입니다.")
         String name,
 
