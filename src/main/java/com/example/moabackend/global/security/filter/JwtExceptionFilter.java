@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.filter;
 
-import com.example.moabackend.domain.user.exception.UserErrorCode;
+import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;

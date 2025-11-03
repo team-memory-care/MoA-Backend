@@ -53,6 +53,9 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       ACCESS_TOKEN_EXPIRATION: ${{ secrets.ACCESS_TOKEN_EXPIRATION }}
       REFRESH_TOKEN_EXPIRATION: ${{ secrets.REFRESH_TOKEN_EXPIRATION }}
+      COOLSMS_API_KEY: ${{ secrets.COOLSMS_API_KEY }}
+      COOLSMS_API_SECRET: ${{ secrets.COOLSMS_API_SECRET }}
+      COOLSMS_API_SENDER_NUMBER: ${{ secrets.COOLSMS_API_SENDER_NUMBER }}
     # 6️⃣ EC2에 SSH 접속해서 배포
     steps:
       - name: Checkout
@@ -73,7 +76,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER
           script: |
             cd ~/deploy
             ./deploy.sh

@@ -1,5 +1,6 @@
 package com.example.moabackend.global.token.controller;
 
+import com.example.moabackend.domain.user.code.UserSuccessCode;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.code.GlobalSuccessCode;
@@ -45,7 +46,7 @@ public class AuthController {
     public ResponseEntity<BaseResponse<String>> requestLoginSms(
             @RequestParam @NotNull(message = "전화번호는 필수입니다.") String phoneNumber) {
         authService.generateAuthCode(phoneNumber);
-        return BaseResponse.toResponseEntity(GlobalSuccessCode.AUTH_CODE_SENT, null);
+        return BaseResponse.toResponseEntity(UserSuccessCode.AUTH_CODE_SENT, null);
     }
 
     /**
