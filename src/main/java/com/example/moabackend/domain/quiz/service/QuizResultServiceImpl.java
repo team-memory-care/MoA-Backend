@@ -3,12 +3,12 @@ package com.example.moabackend.domain.quiz.service;
 import com.example.moabackend.domain.quiz.converter.QuizConverter;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
-import com.example.moabackend.domain.quiz.entity.Quiz;
+import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
-import com.example.moabackend.domain.quiz.repository.QuizRepository;
-import com.example.moabackend.domain.user.exception.UserErrorCode;
-import com.example.moabackend.domain.user.persistence.entity.User;
-import com.example.moabackend.domain.user.persistence.repository.UserRepository;
+import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
+import com.example.moabackend.domain.user.code.UserErrorCode;
+import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +21,8 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class QuizServiceImpl implements QuizService {
-    private final QuizRepository quizRepository;
+public class QuizResultServiceImpl implements QuizResultService {
+    private final QuizResultRepository quizRepository;
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
 
@@ -32,7 +32,7 @@ public class QuizServiceImpl implements QuizService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<Quiz> quiz = quizRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), quizSaveRequestDto.type());
+        Optional<QuizResult> quiz = quizRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), quizSaveRequestDto.type());
 
         if (quiz.isPresent()) {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());

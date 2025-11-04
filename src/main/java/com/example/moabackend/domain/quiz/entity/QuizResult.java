@@ -1,8 +1,7 @@
 package com.example.moabackend.domain.quiz.entity;
 
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
-import com.example.moabackend.domain.user.persistence.entity.User;
-import com.example.moabackend.global.jpa.BaseEntity;
+import com.example.moabackend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +12,7 @@ import java.time.LocalDate;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Quiz extends BaseEntity {
+public class QuizResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,7 +35,7 @@ public class Quiz extends BaseEntity {
     private LocalDate date;
 
     @Builder
-    public Quiz(User user, Integer totalNumber, Integer correctNumber, EQuizType type, LocalDate date) {
+    public QuizResult(User user, Integer totalNumber, Integer correctNumber, EQuizType type, LocalDate date) {
         this.user = user;
         this.totalNumber = totalNumber;
         this.correctNumber = correctNumber;

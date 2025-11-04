@@ -3,7 +3,7 @@ package com.example.moabackend.domain.quiz.controller;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
 import com.example.moabackend.domain.quiz.code.success.QuizSuccessCode;
-import com.example.moabackend.domain.quiz.service.QuizService;
+import com.example.moabackend.domain.quiz.service.QuizResultService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @RequestMapping("/api/v1/quiz")
 @Tag(name = "Quiz", description = "퀴즈 API")
 public class QuizController {
-    private final QuizService quizService;
+    private final QuizResultService quizService;
 
     @Operation(summary = "퀴즈 결과 저장",
             description = "퀴즈 결과를 저장하는 API입니다.<br>이미 푼 퀴즈라면 맞은 개수만 업데이트, 처음 푼 퀴즈라면 새로 저장을 진행합니다.")

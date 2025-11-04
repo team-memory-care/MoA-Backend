@@ -5,7 +5,7 @@ import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
 
 import java.time.LocalDate;
 
-public interface QuizService {
+public interface QuizResultService {
     void saveQuizResult(Long userId, QuizSaveRequestDto quizSaveRequestDto);
 
     Boolean hasCompletedAllQuiz(Long userId, LocalDate date);
