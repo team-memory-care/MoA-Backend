@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.filter;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.security.info.JwtUserInfo;
 import com.example.moabackend.global.security.provider.JwtAuthenticationManager;
@@ -43,8 +43,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // 회원가입, 로그인, 인증 코드 관련 요청은 토큰 검사하지 않고 통과
         String token = parseJwt(request);
-
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         Claims claims = jwtUtil.validateToken(token);
         log.info("claim: getUserId() = {}", claims.get(Constants.CLAIM_USER_ID, Long.class));
 

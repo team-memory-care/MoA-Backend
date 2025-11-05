@@ -1,6 +1,6 @@
 package com.example.moabackend.global.security.utils;
 
-import com.example.moabackend.domain.user.persistence.entity.type.ERole;
+import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;
