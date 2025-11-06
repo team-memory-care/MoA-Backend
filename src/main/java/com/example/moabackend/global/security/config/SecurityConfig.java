@@ -1,5 +1,6 @@
 package com.example.moabackend.global.security.config;
 
+import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.security.filter.JwtAuthenticationFilter;
 import com.example.moabackend.global.security.filter.JwtExceptionFilter;
 import com.example.moabackend.global.security.handler.exception.CustomAccessDeniedHandler;
@@ -39,16 +40,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers(
-                                        "/api/users/register",
-                                        "/api/users/register/code-request",
-                                        "/api/users/register/code-complete",
-                                        "/api/auth/sms/request",
-                                        "/api/auth/login",
-                                        "/api/auth/code/issue",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**")
-                                .permitAll()
+                                .requestMatchers(Constants.NO_NEED_AUTH.toArray(String[]::new)).permitAll()
                                 .requestMatchers("/api/users/register/select-role").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN") //
 
                                 .anyRequest().authenticated()

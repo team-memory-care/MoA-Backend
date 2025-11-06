@@ -21,9 +21,13 @@ public class Constants {
             "/api/users/signup",
             "/api/users/signup-confirm",
             "/api/users/login",
+            "/api/users/register",
+            "/api/users/register/code-request",
+            "/api/users/register/code-complete",
             "/api/auth/send-code",
             "/api/auth/verify-code",
-            "/ws/**"
+            "/api/auth/sms/request",
+            "/api/auth/login",
+            "/api/auth/code/issue"
     );
-    public static final Duration SUBSCRIPTION_TTL = Duration.ofHours(24);
 }
