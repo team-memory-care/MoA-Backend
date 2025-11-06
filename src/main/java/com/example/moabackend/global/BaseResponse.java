@@ -45,14 +45,4 @@ public record BaseResponse<T>(
                 .data(null)
                 .build();
     }
-
-    public static <T> ResponseEntity<BaseResponse<T>> toResponseEntity(SuccessCode s, T data) {
-        return ResponseEntity
-                .status(s.getStatus())
-                .body(BaseResponse.<T>builder()
-                        .success(Boolean.TRUE)
-                        .message(s.getMessage())
-                        .data(data)
-                        .build());
-    }
 }
