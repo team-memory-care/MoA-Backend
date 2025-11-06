@@ -16,7 +16,7 @@ public record SpacetimeQuizQuestionDto(
         List<String> imageOptionsUrl
 ) implements QuizQuestionDto {
     public SpacetimeQuizQuestionDto {
-        if (quizType != EQuizType.PERSISTENCE) {
+        if (quizType != EQuizType.SPACETIME) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }

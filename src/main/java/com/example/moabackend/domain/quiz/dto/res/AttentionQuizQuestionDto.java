@@ -13,11 +13,11 @@ public record AttentionQuizQuestionDto(
         String questionFormat,
         String questionContent,
         // 2. 유형별 필드
-        String calculateExpression,
-        String inputNumber
+        String expression,
+        String inputType
 ) implements QuizQuestionDto {
     public AttentionQuizQuestionDto {
-        if (quizType != EQuizType.PERSISTENCE) {
+        if (quizType != EQuizType.ATTENTION) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }
