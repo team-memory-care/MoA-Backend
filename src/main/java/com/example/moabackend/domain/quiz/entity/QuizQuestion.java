@@ -31,16 +31,17 @@ public class QuizQuestion {
     @Column(nullable = false, length = 100)
     private String answer;
 
-    @Column(nullable = false)
-    private Integer level;
+    @Column(name = "detail_data", columnDefinition = "jsonb")
+    private String detailData;
 
     @Builder
-    public QuizQuestion(Long id, EQuizType type, String questionContent, String questionFormat, String answer, Integer level) {
+
+    public QuizQuestion(Long id, EQuizType type, String questionContent, String questionFormat, String answer, String detailData) {
         this.id = id;
         this.type = type;
         this.questionContent = questionContent;
         this.questionFormat = questionFormat;
         this.answer = answer;
-        this.level = level;
+        this.detailData = detailData;
     }
 }
