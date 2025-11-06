@@ -4,8 +4,6 @@ import com.example.moabackend.domain.quiz.code.success.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 
-import java.util.List;
-
 public record AttentionQuizQuestionDto(
         // 1. 공통 필드
         Long questionId,

@@ -1,6 +1,5 @@
 package com.example.moabackend.global.constant;
 
-import java.time.Duration;
 import java.util.List;
 
 public class Constants {

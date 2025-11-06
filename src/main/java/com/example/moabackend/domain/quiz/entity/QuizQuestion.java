@@ -35,7 +35,6 @@ public class QuizQuestion {
     private String detailData;
 
     @Builder
-
     public QuizQuestion(Long id, EQuizType type, String questionContent, String questionFormat, String answer, String detailData) {
         this.id = id;
         this.type = type;
