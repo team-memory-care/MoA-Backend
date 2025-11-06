@@ -1,6 +1,6 @@
 package com.example.moabackend.domain.quiz.dto.res;
 
-import com.example.moabackend.domain.quiz.code.success.QuizErrorCode;
+import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 
