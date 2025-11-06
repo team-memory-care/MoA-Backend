@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor // ObjectMapper 의존성 주입을 위해 사용
+@RequiredArgsConstructor
 public class QuizConverter {
 
     private final ObjectMapper objectMapper;
