@@ -39,7 +39,6 @@ public class QuizResultServiceImpl implements QuizResultService {
         } else {
             quizRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
         }
-
     }
 
     @Override
