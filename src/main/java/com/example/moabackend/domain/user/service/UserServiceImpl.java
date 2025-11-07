@@ -35,8 +35,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 중복되지 않는 4자리 부모 회원 코드를 생성합니다.
-     *
-     * @return 고유한 4자리 숫자 코드
+     * (UserRepository에 existsByParentCode(String) 메서드가 있다고 가정)
      */
     private String generateUniqueParentCode() {
         final int MAX_RETRIES = 5;
@@ -52,29 +51,23 @@ public class UserServiceImpl implements UserService {
 
     /**
      * [회원가입 1단계] 사용자 기본 정보를 Redis에 임시 저장합니다.
-     * 키: SIGNUP_TEMP_KEY_PREFIX + 전화번호
      */
     @Override
     @Transactional // 쓰기 작업 필요
     public void preSignUp(UserSignUpRequestDto request) {
-        // Redis 키를 전화번호로 통일하여 2단계에서 조회 가능하도록 보장
         String redisKey = SIGNUP_TEMP_KEY_PREFIX + request.phoneNumber();
         redisService.setData(redisKey, request, SIGNUP_TTL_MINUTES);
     }
 
     /**
      * [회원가입 2단계-1] 전화번호 중복 체크 및 인증 코드 발송을 처리합니다.
-     *
-     * @return 발송 성공 메시지
      */
     @Override
     @Transactional(readOnly = false)
     public String requestSignUpSms(String phoneNumber) {
-        // DB에 이미 존재하는지 확인 (회원가입이므로 없어야 함)
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
-        // 회원가입용 인증 코드 발송 (AuthService에 분리된 로직 호출)
         return authService.generateSignUpAuthCode(phoneNumber);
     }
 
@@ -84,30 +77,26 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional // 쓰기 작업 필요
     public JwtDTO confirmSignUpAndLogin(String phoneNumber, String authCode) {
-        // 1. 인증 코드 검증 (성공 시 Redis에서 코드 삭제)
         if (!authService.verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
 
-        // 2. Redis에서 1단계 임시 데이터 로드
         String redisKey = SIGNUP_TEMP_KEY_PREFIX + phoneNumber;
         UserSignUpRequestDto request = redisService.getData(redisKey, UserSignUpRequestDto.class);
 
-        // Redis 데이터 만료 또는 누락 체크
         if (request == null) {
             throw new CustomException(UserErrorCode.AUTH_CODE_EXPIRED);
         }
-        redisService.deleteData(redisKey); // 임시 데이터 최종 삭제
+        redisService.deleteData(redisKey);
 
-        // 2-1. 최종 등록 직전 중복 체크 (Double Check, Race Condition 방지)
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
 
-        // 3. DB 저장 (User 엔티티 생성)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
+        // 3. DB 저장 (User 엔티티 생성)
         User user = User.builder()
                 .name(request.name())
                 .phoneNumber(phoneNumber)
@@ -116,19 +105,21 @@ public class UserServiceImpl implements UserService {
                 .status(EUserStatus.ACTIVE)
                 .birthDate(parsed)
                 .parentCode(null)
-                .connectedParentCode(null)
+                .parent(null)
                 .build();
 
         User savedUser = userRepository.save(user);
-        return authService.generateTokensForUser(savedUser); // 토큰 발행
+        return authService.generateTokensForUser(savedUser);
     }
 
     /**
      * 사용자 역할 선택 API: 미선택(PENDING) 상태에서 역할 확정 및 부모-자녀 연결을 수행합니다.
+     * (수정: User 엔티티의 completeRoleSelection 시그니처와 정규화된 로직에 맞춤)
      */
     @Override
     @Transactional // 쓰기 작업 필요
     public UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode) {
+        // [전제] UserRepository에 Optional<User> findByParentCode(String) 메서드가 필요함
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PENDING) {
@@ -136,20 +127,27 @@ public class UserServiceImpl implements UserService {
         }
 
         String codeToIssue = null;
-        String codeToConnect = null;
+        User parentUser = null; // 연결될 부모 User 엔티티
 
         if (role == ERole.PARENT) {
+            // 1. 부모 역할: 코드 생성 및 발급
             codeToIssue = generateUniqueParentCode();
+
         } else if (role == ERole.CHILD) {
-            if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
+            // 2. 자녀 역할: 부모 코드 검증 및 부모 엔티티 조회
+            if (parentCode == null || parentCode.isEmpty()) {
                 throw new CustomException(UserErrorCode.INVALID_PARENT_CODE);
             }
-            codeToConnect = parentCode;
+
+            // 부모 코드로 부모 User 엔티티 조회
+            parentUser = userRepository.findByParentCode(parentCode)
+                    .orElseThrow(() -> new CustomException(UserErrorCode.INVALID_PARENT_CODE));
+
         } else {
             throw new CustomException(UserErrorCode.INVALID_INPUT_VALUE);
         }
 
-        user.completeRoleSelection(role, codeToIssue, codeToConnect);
+        user.completeRoleSelection(role, codeToIssue, parentUser);
         return UserResponseDto.from(user);
     }
 
