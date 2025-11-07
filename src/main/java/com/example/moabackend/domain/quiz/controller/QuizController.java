@@ -2,8 +2,10 @@ package com.example.moabackend.domain.quiz.controller;
 
 import com.example.moabackend.domain.quiz.code.success.QuizSuccessCode;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
+import com.example.moabackend.domain.quiz.dto.req.QuizSubmitRequestDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizQuestionDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
+import com.example.moabackend.domain.quiz.dto.res.QuizSubmitResponseDto;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.service.QuizQuestionService;
 import com.example.moabackend.domain.quiz.service.QuizResultService;
@@ -12,7 +14,10 @@ import com.example.moabackend.global.annotation.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -46,6 +51,19 @@ public class QuizController {
         List<QuizQuestionDto> questions = quizQuestionService.getQuizSetByType(userId, type);
         return BaseResponse.success(QuizSuccessCode.FIND_QUIZ_SET_SUCCESS, questions);
     }
+
+    @Operation(summary = "퀴즈 답안 제출 및 체점",
+            description = "사용자가 푼 문제의 답안을 제출하고 정답 여부 및 실제 정답을 반환합니다.")
+    @PostMapping("/submit")
+    @ResponseStatus(HttpStatus.CREATED)
+    public BaseResponse<QuizSubmitResponseDto> submitQuizAnswer(
+            @UserId Long userId,
+            @RequestBody @Valid QuizSubmitRequestDto requestDto
+            ){
+        QuizSubmitResponseDto response = quizResultService.submitAndScoreAnswer(userId, requestDto);
+        return BaseResponse.success(QuizSuccessCode.SUBMIT_ANSWER_SUCCESS, response);
+    }
+
 
     @Operation(summary = "퀴즈 결과 저장",
             description = "퀴즈 결과를 저장하는 API입니다.<br>이미 푼 퀴즈라면 맞은 개수만 업데이트, 처음 푼 퀴즈라면 새로 저장을 진행합니다.")

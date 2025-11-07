@@ -18,6 +18,10 @@ public class QuizResult {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id", nullable = false)
+    private QuizQuestion question;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -35,7 +39,9 @@ public class QuizResult {
     private LocalDate date;
 
     @Builder
-    public QuizResult(User user, Integer totalNumber, Integer correctNumber, EQuizType type, LocalDate date) {
+    public QuizResult(Long id, QuizQuestion question, User user, Integer totalNumber, Integer correctNumber, EQuizType type, LocalDate date) {
+        this.id = id;
+        this.question = question;
         this.user = user;
         this.totalNumber = totalNumber;
         this.correctNumber = correctNumber;
