@@ -31,7 +31,7 @@ public class QuizQuestion {
     @Column(nullable = false, length = 100)
     private String answer;
 
-    @Column(name = "detail_data", columnDefinition = "jsonb")
+    @Column(name = "detail_data", columnDefinition = "json")
     private String detailData;
 
     @Builder
