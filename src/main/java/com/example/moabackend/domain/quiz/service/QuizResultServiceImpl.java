@@ -1,10 +1,15 @@
 package com.example.moabackend.domain.quiz.service;
 
+import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.converter.QuizConverter;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
+import com.example.moabackend.domain.quiz.dto.req.QuizSubmitRequestDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
+import com.example.moabackend.domain.quiz.dto.res.QuizSubmitResponseDto;
+import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
+import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
@@ -25,6 +30,34 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final QuizResultRepository quizRepository;
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
+    private final QuizQuestionRepository quizQuestionRepository;
+
+
+    @Override
+    @Transactional
+    public QuizSubmitResponseDto submitAndScoreAnswer(Long userId, QuizSubmitRequestDto requestDto) {
+        QuizQuestion question = quizQuestionRepository.findById(requestDto.questionId())
+                .orElseThrow(() -> new CustomException(QuizErrorCode.QUIZ_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        boolean isCorrect = question.getAnswer().trim().equalsIgnoreCase(requestDto.userAnswer().trim());
+        QuizResult quizResult = QuizResult.builder()
+                .user(user)
+                .question(question)
+                .totalNumber(1)
+                .correctNumber(isCorrect ? 1 : 0)
+                .date(LocalDate.now())
+                .type(question.getType())
+                .build();
+        quizRepository.save(quizResult);
+
+        return new QuizSubmitResponseDto(
+                question.getId(),
+                question.getType(),
+                isCorrect,
+                question.getAnswer()
+        );
+    }
+
 
     @Override
     @Transactional
