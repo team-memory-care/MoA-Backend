@@ -9,7 +9,6 @@ import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,6 +22,12 @@ public class QuizConverter {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * DB에서 조회된 QuizQuestion 엔티티를 EQuizType에 맞는 다형성 DTO로 변환합니다.
+     *
+     * @param entity DB에서 조회된 QuizQuestion 엔티티
+     * @return 해당 유형의 QuizQuestionDto (Persistence, Memory 등)
+     */
     public QuizQuestionDto toDto(QuizQuestion entity) {
         EQuizType type = entity.getType();
         String detailJson = entity.getDetailData();
@@ -39,10 +44,15 @@ public class QuizConverter {
                 default -> throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
             };
         } catch (JsonProcessingException e) {
+            // JSON 파싱 실패는 심각한 DB 데이터 오류를 의미
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
     }
 
+
+    /**
+     * 퀴즈 결과를 저장하기 위해 DTO를 QuizResult 엔티티로 변환합니다.
+     */
     public QuizResult toEntity(User user, QuizSaveRequestDto dto) {
         return QuizResult.builder()
                 .user(user)
@@ -53,10 +63,10 @@ public class QuizConverter {
                 .build();
     }
 
-    // 1. PERSISTENCE (지남력)
+    // 1. PERSISTENCE (지남력) - 객관식 옵션 파싱
     private PersistenceQuizQuestionDto createPersistenceDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
-        List<String> options = objectMapper.readValue(detailJson, new TypeReference<>() {
-        });
+        OptionsWrapper wrapper = objectMapper.readValue(detailJson, OptionsWrapper.class);
+        List<String> options = wrapper.options();
 
         return new PersistenceQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(), options
@@ -65,8 +75,8 @@ public class QuizConverter {
 
     // 2. LINGUISTIC (언어능력)
     private LinguisticQuizQuestionDto createLinguisticDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
-        List<String> options = objectMapper.readValue(detailJson, new TypeReference<>() {
-        });
+        OptionsWrapper wrapper = objectMapper.readValue(detailJson, OptionsWrapper.class);
+        List<String> options = wrapper.options();
 
         return new LinguisticQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
@@ -104,20 +114,24 @@ public class QuizConverter {
         );
     }
 
+    /**
+     * PERSISTENCE, LINGUISTIC 처럼 {"options": [...]} 구조를 파싱하기 위한 Wrapper
+     */
+    private record OptionsWrapper(
+            List<String> options
+    ) {}
+
     private record MemoryDetailDto(
             String inputMethod,
             String requiredSequenceType
-    ) {
-    }
+    ) {}
 
     private record AttentionDetailDto(
             String expression,
             String inputType
-    ) {
-    }
+    ) {}
 
     private record SpacetimeDetailDto(
             List<String> imageOptionsUrl
-    ) {
-    }
+    ) {}
 }
