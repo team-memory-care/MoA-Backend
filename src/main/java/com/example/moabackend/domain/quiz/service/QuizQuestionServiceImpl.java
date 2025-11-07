@@ -23,7 +23,6 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizConverter quizConverter;
 
-    // 출제 개수 상수 정의
     private static final int COUNT_PER_TYPE_TODAY = 3;
     private static final int COUNT_PER_TYPE_SET = 5;
 
@@ -37,7 +36,6 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
                     .map(quizConverter::toDto)
                     .forEach(quizSet::add);
         }
-
         if (quizSet.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
