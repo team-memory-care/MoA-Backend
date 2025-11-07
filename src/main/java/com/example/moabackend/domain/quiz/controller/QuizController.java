@@ -58,7 +58,7 @@ public class QuizController {
     public BaseResponse<QuizSubmitResponseDto> submitQuizAnswer(
             @UserId Long userId,
             @RequestBody @Valid QuizSubmitRequestDto requestDto
-            ){
+    ) {
         QuizSubmitResponseDto response = quizResultService.submitAndScoreAnswer(userId, requestDto);
         return BaseResponse.success(QuizSuccessCode.SUBMIT_ANSWER_SUCCESS, response);
     }
