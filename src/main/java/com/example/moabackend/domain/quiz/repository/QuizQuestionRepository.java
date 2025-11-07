@@ -11,7 +11,7 @@ public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long
     @Query(value = """
                 SELECT * FROM quiz_question q
                 WHERE q.type = :type
-                ORDER BY RANDOM()
+                ORDER BY RAND()
                 LIMIT :count
             """, nativeQuery = true)
     List<QuizQuestion> findRandomNByType(@Param("type") String type, @Param("count") int count);
