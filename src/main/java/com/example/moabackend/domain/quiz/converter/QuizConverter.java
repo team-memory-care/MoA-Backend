@@ -53,7 +53,7 @@ public class QuizConverter {
                 .build();
     }
 
-    // 1. PERSISTENCE
+    // 1. PERSISTENCE (지남력)
     private PersistenceQuizQuestionDto createPersistenceDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
         List<String> options = objectMapper.readValue(detailJson, new TypeReference<>() {
         });
@@ -63,17 +63,7 @@ public class QuizConverter {
         );
     }
 
-    // 2. MEMORY (기억력/음성 입력)
-    private MemoryQuizQuestionDto createMemoryDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
-        MemoryDetailDto detail = objectMapper.readValue(detailJson, MemoryDetailDto.class);
-
-        return new MemoryQuizQuestionDto(
-                entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
-                detail.inputMethod(), detail.requiredSequenceType()
-        );
-    }
-
-    // 3. LINGUISTIC (언어능력)
+    // 2. LINGUISTIC (언어능력)
     private LinguisticQuizQuestionDto createLinguisticDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
         List<String> options = objectMapper.readValue(detailJson, new TypeReference<>() {
         });
@@ -81,6 +71,16 @@ public class QuizConverter {
         return new LinguisticQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
                 options
+        );
+    }
+
+    // 3. MEMORY (기억력/음성 입력)
+    private MemoryQuizQuestionDto createMemoryDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
+        MemoryDetailDto detail = objectMapper.readValue(detailJson, MemoryDetailDto.class);
+
+        return new MemoryQuizQuestionDto(
+                entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
+                detail.inputMethod(), detail.requiredSequenceType()
         );
     }
 
