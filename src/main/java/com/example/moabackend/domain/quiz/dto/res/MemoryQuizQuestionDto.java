@@ -15,7 +15,7 @@ public record MemoryQuizQuestionDto(
         String requiredSequenceType // 추가: "SEQUENCE" (순서 회상 여부)
 ) implements QuizQuestionDto{
     public MemoryQuizQuestionDto{
-        if (quizType!=EQuizType.MEMORY){
+        if (quizType == null || quizType!=EQuizType.MEMORY){
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }

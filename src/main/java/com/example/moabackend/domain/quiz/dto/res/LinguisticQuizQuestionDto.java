@@ -16,7 +16,7 @@ public record LinguisticQuizQuestionDto(
         List<String> options
 ) implements QuizQuestionDto {
     public LinguisticQuizQuestionDto {
-        if (quizType != EQuizType.LINGUISTIC) {
+        if (quizType == null || quizType != EQuizType.LINGUISTIC) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }
