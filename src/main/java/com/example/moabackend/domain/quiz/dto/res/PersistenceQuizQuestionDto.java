@@ -16,7 +16,7 @@ public record PersistenceQuizQuestionDto(
         List<String> options
 ) implements QuizQuestionDto {
     public PersistenceQuizQuestionDto {
-        if (quizType != EQuizType.PERSISTENCE) {
+        if (quizType == null || quizType != EQuizType.PERSISTENCE) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }

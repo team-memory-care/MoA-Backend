@@ -15,7 +15,7 @@ public record AttentionQuizQuestionDto(
         String inputType
 ) implements QuizQuestionDto {
     public AttentionQuizQuestionDto {
-        if (quizType != EQuizType.ATTENTION) {
+        if (quizType == null || quizType != EQuizType.ATTENTION) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }
