@@ -32,6 +32,10 @@ public class QuizConverter {
         EQuizType type = entity.getType();
         String detailJson = entity.getDetailData();
 
+        if (detailJson == null || detailJson.trim().isEmpty()) {
+            throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
+        }
+
         try {
             // 1. 유형에 따라 detailData JSON을 파싱하여 DTO의 특화 필드에 매핑
             return switch (type) {
@@ -119,19 +123,23 @@ public class QuizConverter {
      */
     private record OptionsWrapper(
             List<String> options
-    ) {}
+    ) {
+    }
 
     private record MemoryDetailDto(
             String inputMethod,
             String requiredSequenceType
-    ) {}
+    ) {
+    }
 
     private record AttentionDetailDto(
             String expression,
             String inputType
-    ) {}
+    ) {
+    }
 
     private record SpacetimeDetailDto(
             List<String> imageOptionsUrl
-    ) {}
+    ) {
+    }
 }
