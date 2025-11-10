@@ -31,7 +31,7 @@ public class QuizController {
     private final QuizResultService quizResultService;
 
     @Operation(summary = "오늘의 퀴즈 세트 출제",
-            description = "5가지 유형별로 3개씩, 총 15개의 문제를 랜점으로 출제합니다.")
+            description = "5가지 유형별로 3개씩, 총 15개의 문제를 랜덤으로 출제합니다.")
     @GetMapping("/today")
     public BaseResponse<List<QuizQuestionDto>> getTodayQuizSet(
             @UserId Long userId
