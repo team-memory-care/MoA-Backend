@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,25 +27,19 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
 
     @Override
     public List<QuizQuestionDto> getTodayQuizSet(Long userId) {
-        List<QuizQuestionDto> quizSet = new ArrayList<>();
-        for (EQuizType type : EQuizType.values()) {
-            List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type, COUNT_PER_TYPE_TODAY);
+        List<QuizQuestion> entities = quizQuestionRepository.findTodayQuizSet();
 
-            entities.stream()
-                    .map(quizConverter::toDto)
-                    .forEach(quizSet::add);
-        }
-        if (quizSet.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
+        if (entities.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
+        List<QuizQuestionDto> quizSet = entities.stream().map(quizConverter::toDto).collect(Collectors.toList());
         Collections.shuffle(quizSet);
         return quizSet;
     }
 
     @Override
     public List<QuizQuestionDto> getQuizSetByType(Long userId, EQuizType type) {
-        List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type, COUNT_PER_TYPE_SET);
-
+        List<QuizQuestion> entities = quizQuestionRepository.findQuizSetByType(type.name(), COUNT_PER_TYPE_SET);
         if (entities.isEmpty()) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
