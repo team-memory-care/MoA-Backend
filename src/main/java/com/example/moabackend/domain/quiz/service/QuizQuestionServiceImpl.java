@@ -30,7 +30,7 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
     public List<QuizQuestionDto> getTodayQuizSet(Long userId) {
         List<QuizQuestionDto> quizSet = new ArrayList<>();
         for (EQuizType type : EQuizType.values()) {
-            List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type.name(), COUNT_PER_TYPE_TODAY);
+            List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type, COUNT_PER_TYPE_TODAY);
 
             entities.stream()
                     .map(quizConverter::toDto)
@@ -45,7 +45,7 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
 
     @Override
     public List<QuizQuestionDto> getQuizSetByType(Long userId, EQuizType type) {
-        List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type.name(), COUNT_PER_TYPE_SET);
+        List<QuizQuestion> entities = quizQuestionRepository.findRandomNByType(type, COUNT_PER_TYPE_SET);
 
         if (entities.isEmpty()) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);

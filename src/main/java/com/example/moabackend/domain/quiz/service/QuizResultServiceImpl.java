@@ -27,7 +27,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class QuizResultServiceImpl implements QuizResultService {
-    private final QuizResultRepository quizRepository;
+    private final QuizResultRepository quizResultRepository;
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
@@ -48,7 +48,7 @@ public class QuizResultServiceImpl implements QuizResultService {
                 .date(LocalDate.now())
                 .type(question.getType())
                 .build();
-        quizRepository.save(quizResult);
+        quizResultRepository.save(quizResult);
 
         return new QuizSubmitResponseDto(
                 question.getId(),
@@ -65,26 +65,26 @@ public class QuizResultServiceImpl implements QuizResultService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> quiz = quizRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), quizSaveRequestDto.type());
+        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), quizSaveRequestDto.type());
 
         if (quiz.isPresent()) {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());
         } else {
-            quizRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
+            quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Boolean hasCompletedAllQuiz(Long userId, LocalDate date) {
-        int completedCount = quizRepository.findCompletedQuizTypes(userId, date).size();
+        int completedCount = quizResultRepository.findCompletedQuizTypes(userId, date).size();
         return completedCount == EQuizType.values().length;
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public QuizRemainTypeResponseDto remainTypeQuiz(Long userId, LocalDate date) {
-        List<EQuizType> completed = quizRepository.findCompletedQuizTypes(userId, date);
+        List<EQuizType> completed = quizResultRepository.findCompletedQuizTypes(userId, date);
         List<EQuizType> remainList = Arrays.stream(EQuizType.values())
                 .filter(type -> !completed.contains(type))
                 .toList();
