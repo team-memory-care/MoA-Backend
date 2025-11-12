@@ -38,12 +38,8 @@ public class QuizResultServiceImpl implements QuizResultService {
     public QuizSubmitResponseDto submitAndScoreAnswer(Long userId, QuizSubmitRequestDto requestDto) {
         QuizQuestion question = quizQuestionRepository.findById(requestDto.questionId())
                 .orElseThrow(() -> new CustomException(QuizErrorCode.QUIZ_NOT_FOUND));
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> existingResult = quizResultRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), question.getType());
-        if (existingResult.isPresent()) {
-            throw new CustomException(QuizErrorCode.ALREADY_SUBMITTED);
-        }
+        userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         boolean isCorrect = question.getAnswer().trim().equalsIgnoreCase(requestDto.userAnswer().trim());
         int correctCount = isCorrect ? 1 : 0;
@@ -60,17 +56,17 @@ public class QuizResultServiceImpl implements QuizResultService {
         );
     }
 
-
     @Override
     @Transactional
     public void saveQuizResult(Long userId, QuizSaveRequestDto quizSaveRequestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), quizSaveRequestDto.type());
+        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeLocked(userId, LocalDate.now(), quizSaveRequestDto.type());
 
         if (quiz.isPresent()) {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());
+            quiz.get().updateTotalNumber(quizSaveRequestDto.totalNumber());
         } else {
             quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
         }
@@ -79,14 +75,14 @@ public class QuizResultServiceImpl implements QuizResultService {
     @Override
     @Transactional(readOnly = true)
     public Boolean hasCompletedAllQuiz(Long userId, LocalDate date) {
-        int completedCount = quizResultRepository.findCompletedQuizTypes(userId, date).size();
+        int completedCount = quizResultRepository.getCompletedQuizTypes(userId, date).size();
         return completedCount == EQuizType.values().length;
     }
 
     @Override
     @Transactional(readOnly = true)
     public QuizRemainTypeResponseDto remainTypeQuiz(Long userId, LocalDate date) {
-        List<EQuizType> completed = quizResultRepository.findCompletedQuizTypes(userId, date);
+        List<EQuizType> completed = quizResultRepository.getCompletedQuizTypes(userId, date);
         List<EQuizType> remainList = Arrays.stream(EQuizType.values())
                 .filter(type -> !completed.contains(type))
                 .toList();
