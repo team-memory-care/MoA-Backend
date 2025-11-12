@@ -39,16 +39,18 @@ public class QuizResultServiceImpl implements QuizResultService {
         QuizQuestion question = quizQuestionRepository.findById(requestDto.questionId())
                 .orElseThrow(() -> new CustomException(QuizErrorCode.QUIZ_NOT_FOUND));
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        Optional<QuizResult> existingResult = quizResultRepository.findByUserIdAndDateAndType(userId, LocalDate.now(), question.getType());
+        if (existingResult.isPresent()) {
+            throw new CustomException(QuizErrorCode.ALREADY_SUBMITTED);
+        }
+
         boolean isCorrect = question.getAnswer().trim().equalsIgnoreCase(requestDto.userAnswer().trim());
-        QuizResult quizResult = QuizResult.builder()
-                .user(user)
-                .question(question)
-                .totalNumber(1)
-                .correctNumber(isCorrect ? 1 : 0)
-                .date(LocalDate.now())
-                .type(question.getType())
-                .build();
-        quizResultRepository.save(quizResult);
+        int correctCount = isCorrect ? 1 : 0;
+
+        QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType());
+
+        saveQuizResult(userId, saveRequest);
 
         return new QuizSubmitResponseDto(
                 question.getId(),
