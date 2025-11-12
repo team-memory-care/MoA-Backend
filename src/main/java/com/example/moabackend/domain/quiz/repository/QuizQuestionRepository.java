@@ -9,16 +9,16 @@ import java.util.List;
 
 
 public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long> {
-    @Query(value = "SELECT qq.* FROM quiz_question qq WHERE qq.type = :type ORDER BY RANDOM() LIMIT :count", nativeQuery = true)
+    @Query(value = "SELECT qq.* FROM quiz_question qq WHERE qq.type = :type ORDER BY RAND() LIMIT :count", nativeQuery = true)
     List<QuizQuestion> findQuizSetByType(@Param("type") String type, @Param("count") int count);
 
     @Query(value = """
             
-            (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'PERSISTENCE' ORDER BY RANDOM() LIMIT 3)
-               UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'MEMORY' ORDER BY RANDOM() LIMIT 3)
-                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'LINGUISTIC' ORDER BY RANDOM() LIMIT 3)
-                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'ATTENTION' ORDER BY RANDOM() LIMIT 3)
-                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'SPACETIME' ORDER BY RANDOM() LIMIT 3)
+            (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'PERSISTENCE' ORDER BY RAND() LIMIT 3)
+               UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'MEMORY' ORDER BY RAND() LIMIT 3)
+                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'LINGUISTIC' ORDER BY RAND() LIMIT 3)
+                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'ATTENTION' ORDER BY RAND() LIMIT 3)
+                    UNION ALL (SELECT qq.* FROM quiz_question qq WHERE qq.type = 'SPACETIME' ORDER BY RAND() LIMIT 3)
             """, nativeQuery = true)
     List<QuizQuestion> findTodayQuizSet();
 }
