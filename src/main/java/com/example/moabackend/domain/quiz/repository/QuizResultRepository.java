@@ -13,14 +13,25 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    // 일반 조회
     Optional<QuizResult> findByUserIdAndDateAndType(Long userId, LocalDate date, EQuizType quizType);
 
+    // 락킹 조회
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT qr FROM QuizResult qr WHERE qr.user.id = :userId AND qr.date = :date AND qr.type = :quizType")
+    Optional<QuizResult> findByUserIdAndDateAndTypeLocked(
+            @Param("userId") Long userId,
+            @Param("date") LocalDate date,
+            @Param("quizType") EQuizType quizType
+    );
+
+    // 왼료 퀴즈 조회
     @Query("""
                 SELECT DISTINCT q.type
                 FROM QuizResult q
                 WHERE q.user.id = :userId
-                AND DATE(q.date) = :date
+                AND q.date = :date 
             """)
-    List<EQuizType> findCompletedQuizTypes(@Param("userId") Long userId, @Param("date") LocalDate date);
+
+    List<EQuizType> getCompletedQuizTypes(@Param("userId") Long userId, @Param("date") LocalDate date);
 }
