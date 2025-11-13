@@ -2,6 +2,9 @@ package com.example.moabackend.global.token.service;
 
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.global.security.dto.JwtDTO;
+import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
+import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
+import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 
 public interface AuthService {
 
@@ -29,4 +32,8 @@ public interface AuthService {
      * 로그인 통합 처리: 인증 코드 검증 후 토큰 발급을 수행합니다.
      */
     JwtDTO login(String phoneNumber, String authCode);
+
+    ReissueTokenResponseDto reissueToken(ReissueTokenRequestDto requestDto);
+
+    void logout(LogoutRequestDto requestDto);
 }
