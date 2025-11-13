@@ -1,10 +1,13 @@
 package com.example.moabackend.global.security.filter;
 
 import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.constant.Constants;
+import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.security.info.JwtUserInfo;
 import com.example.moabackend.global.security.provider.JwtAuthenticationManager;
 import com.example.moabackend.global.security.utils.JwtUtil;
+import com.example.moabackend.global.token.service.AccessTokenDenyService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,6 +30,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final JwtAuthenticationManager jwtAuthenticationManager;
+    private final AccessTokenDenyService accessTokenDenyService;
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     @Override
@@ -50,6 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         Claims claims = jwtUtil.validateToken(token);
+        String jti = claims.getId();
+        if (accessTokenDenyService.isDenied(jti)) {
+            log.warn("Denied Access Token detected. jti={}", jti);
+            throw new CustomException(GlobalErrorCode.INVALID_TOKEN_ERROR);
+        }
+
         log.info("claim: getUserId() = {}", claims.get(Constants.CLAIM_USER_ID, Long.class));
 
         //TODO : 메서드화 util로 이동

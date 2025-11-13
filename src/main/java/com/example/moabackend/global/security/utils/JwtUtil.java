@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -62,6 +63,7 @@ public class JwtUtil implements InitializingBean {
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis())) //현재 시간
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setId(UUID.randomUUID().toString())
                 .signWith(key)
                 .compact();
     }
@@ -82,7 +84,6 @@ public class JwtUtil implements InitializingBean {
                     .getBody();
             log.info("[JWT] Claims = {}", claims);
 
-
             Long userId = claims.get(Constants.CLAIM_USER_ID, Long.class);
             log.info("[JWT] Extracted userId = {}", userId);
 
@@ -95,5 +96,26 @@ public class JwtUtil implements InitializingBean {
 
             throw new CustomException(GlobalErrorCode.INVALID_TOKEN_ERROR);
         }
+    }
+
+    public String getJti(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getId();
+    }
+
+    public long getAccessTokenRemainingMillis(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        Date expiration = claims.getExpiration(); // 만료 시간
+        long now = System.currentTimeMillis();
+
+        return expiration.getTime() - now; // 남은 밀리초 반환
     }
 }
