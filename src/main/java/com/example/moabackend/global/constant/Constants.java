@@ -28,6 +28,7 @@ public class Constants {
             "/api/v1/auth/verify-code",
             "/api/v1/auth/sms/request",
             "/api/v1/auth/login",
-            "/api/v1/auth/code/issue"
+            "/api/v1/auth/code/issue",
+            "/api/v1/s3/upload"
     );
 }
