@@ -79,12 +79,11 @@ public class QuizConverter {
 
     // 2. LINGUISTIC (언어능력)
     private LinguisticQuizQuestionDto createLinguisticDto(QuizQuestion entity, String detailJson) throws JsonProcessingException {
-        OptionsWrapper wrapper = objectMapper.readValue(detailJson, OptionsWrapper.class);
-        List<String> options = wrapper.options();
+        LinguisticDetailDto detail = objectMapper.readValue(detailJson, LinguisticDetailDto.class);
 
         return new LinguisticQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
-                options
+                detail.imageUrl, detail.answerOptions
         );
     }
 
@@ -123,6 +122,12 @@ public class QuizConverter {
      */
     private record OptionsWrapper(
             List<String> options
+    ) {
+    }
+
+    private record LinguisticDetailDto(
+            String imageUrl,
+            List<String> answerOptions
     ) {
     }
 

@@ -13,7 +13,7 @@ public record PersistenceQuizQuestionDto(
         String questionFormat,
         String questionContent,
         //2. 유형별 필드 (객관식)
-        List<String> options
+        List<String> answerOptions
 ) implements QuizQuestionDto {
     public PersistenceQuizQuestionDto {
         if (quizType == null || quizType != EQuizType.PERSISTENCE) {

@@ -13,7 +13,8 @@ public record LinguisticQuizQuestionDto(
         String questionFormat,
         String questionContent,
         // 2. 유형별 필드
-        List<String> options
+        String imageUrl,
+        List<String> answerOptions
 ) implements QuizQuestionDto {
     public LinguisticQuizQuestionDto {
         if (quizType == null || quizType != EQuizType.LINGUISTIC) {
