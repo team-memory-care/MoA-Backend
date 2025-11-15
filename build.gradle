@@ -66,6 +66,9 @@ dependencies {
 
     // Google Libphonenumber 추가 (전화번호 포맷팅을 위해 필수적)
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.30'
+
+    // AWS S3
+    implementation 'software.amazon.awssdk:s3:2.29.50'
 }
 
 tasks.named('test') {

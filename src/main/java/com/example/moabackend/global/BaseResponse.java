@@ -3,7 +3,6 @@ package com.example.moabackend.global;
 import com.example.moabackend.global.code.ErrorCode;
 import com.example.moabackend.global.code.SuccessCode;
 import lombok.Builder;
-import org.springframework.http.ResponseEntity;
 
 public record BaseResponse<T>(
         Boolean success,
