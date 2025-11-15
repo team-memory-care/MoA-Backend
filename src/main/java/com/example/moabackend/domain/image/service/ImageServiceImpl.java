@@ -14,10 +14,8 @@ import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.InputStream;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -58,7 +56,7 @@ public class ImageServiceImpl implements ImageService {
         }
 
         // 허용되지 않는 확장자 검증
-        String extension = URLConnection.guessContentTypeFromName(fileName);
+        String extension = fileName.substring(lastDotIndex + 1).toLowerCase();
         List<String> allowedExtentionList = Arrays.asList("jpg", "jpeg", "png", "gif");
         if (extension == null || !allowedExtentionList.contains(extension)) {
             throw new CustomException(GlobalErrorCode.INVALID_FILE_EXTENSION);
@@ -69,8 +67,6 @@ public class ImageServiceImpl implements ImageService {
     private String uploadImageToS3(MultipartFile file) {
         // 원본 파일 명
         String originalFileName = file.getOriginalFilename();
-        // 확장자 명
-        String extension = Objects.requireNonNull(originalFileName).substring(originalFileName.lastIndexOf("." + 1));
         // 변경된 파일
         String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFileName;
 
@@ -80,7 +76,7 @@ public class ImageServiceImpl implements ImageService {
                     .bucket(bucketName)
                     .key(s3FileName)
                     .acl(ObjectCannedACL.PUBLIC_READ)
-                    .contentType("image/+extension")
+                    .contentType(file.getContentType())
                     .contentLength(file.getSize())
                     .build();
 
