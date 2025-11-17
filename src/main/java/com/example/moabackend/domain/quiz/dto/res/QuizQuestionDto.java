@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PersistenceQuizQuestionDto.class, name = "PERSISTENCE"),
-        @JsonSubTypes.Type(value = LinguisticQuizQuestionDto.class, name = "LINGUISTIC"),
         @JsonSubTypes.Type(value = MemoryQuizQuestionDto.class, name = "MEMORY"),
+        @JsonSubTypes.Type(value = LinguisticQuizQuestionDto.class, name = "LINGUISTIC"),
         @JsonSubTypes.Type(value = AttentionQuizQuestionDto.class, name = "ATTENTION"),
         @JsonSubTypes.Type(value = SpacetimeQuizQuestionDto.class, name = "SPACETIME")
 })

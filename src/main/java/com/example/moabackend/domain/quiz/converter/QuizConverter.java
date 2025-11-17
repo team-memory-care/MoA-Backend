@@ -40,8 +40,8 @@ public class QuizConverter {
             // 1. 유형에 따라 detailData JSON을 파싱하여 DTO의 특화 필드에 매핑
             return switch (type) {
                 case PERSISTENCE -> createPersistenceDto(entity, detailJson);
-                case MEMORY -> createMemoryDto(entity, detailJson);
                 case LINGUISTIC -> createLinguisticDto(entity, detailJson);
+                case MEMORY -> createMemoryDto(entity, detailJson);
                 case ATTENTION -> createAttentionDto(entity, detailJson);
                 case SPACETIME -> createSpacetimeDto(entity, detailJson);
 
@@ -125,15 +125,15 @@ public class QuizConverter {
     ) {
     }
 
-    private record LinguisticDetailDto(
-            String imageUrl,
-            List<String> answerOptions
-    ) {
-    }
-
     private record MemoryDetailDto(
             String inputMethod,
             String requiredSequenceType
+    ) {
+    }
+
+    private record LinguisticDetailDto(
+            String imageUrl,
+            List<String> answerOptions
     ) {
     }
 
