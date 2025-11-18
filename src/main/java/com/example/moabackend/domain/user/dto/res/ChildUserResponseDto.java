@@ -13,7 +13,7 @@ public record ChildUserResponseDto(
         @Schema(description = "사용자 고유 ID", example = "1")
         Long id,
 
-        @Schema(description = "사용자 아름", example = "김모아")
+        @Schema(description = "사용자 이름", example = "김모아")
         String name,
 
         @Schema(description = "전화번호", example = "01012345678")
@@ -23,7 +23,7 @@ public record ChildUserResponseDto(
         @Schema(description = "생년월일", example = "1995-03-20")
         LocalDate birthDate,
 
-        @Schema(description = "역할", example = "PARENT")
+        @Schema(description = "역할", example = "CHILD")
         ERole role,
 
         @Schema(description = "성별(MALE 또는 FEMALE)", example = "MALE")
