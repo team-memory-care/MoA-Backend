@@ -13,6 +13,9 @@ import java.time.LocalDate;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "date", "type"})
+})
 public class QuizResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

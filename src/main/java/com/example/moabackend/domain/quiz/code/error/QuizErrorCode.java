@@ -13,7 +13,7 @@ public enum QuizErrorCode implements ErrorCode {
     // 퀴즈를 찾을 수 없는 경우
     QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND, "퀴즈를 찾을 수 없습니다."),
 
-    // 퀴즈를 타입이 잘못된 경우
+    // 퀴즈 데이터 포맷이 잘못된 경우
     QUIZ_DATA_FORMAT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "문제 데이터 포맷 오류 (JSON 파싱 실패 등, 서버 데이터 문제)"),
 
     // 퀴즈를 이미 제출한 경우
