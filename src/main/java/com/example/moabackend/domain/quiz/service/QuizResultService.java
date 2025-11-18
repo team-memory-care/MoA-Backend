@@ -2,8 +2,8 @@ package com.example.moabackend.domain.quiz.service;
 
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
 import com.example.moabackend.domain.quiz.dto.req.QuizSubmitRequestDto;
-import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
-import com.example.moabackend.domain.quiz.dto.res.QuizSubmitResponseDto;
+import com.example.moabackend.domain.quiz.dto.res.result.QuizRemainTypeResponseDto;
+import com.example.moabackend.domain.quiz.dto.res.result.QuizSubmitResponseDto;
 
 import java.time.LocalDate;
 
