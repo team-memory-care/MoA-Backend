@@ -11,8 +11,9 @@ public record MemoryQuizQuestionDto(
         String questionFormat,
         String questionContent,
         // 2. 유형별 필드
-        String inputMethod,  // "VOICE" 또는 "TEXT"
-        String requiredSequenceType // 추가: "SEQUENCE" (순서 회상 여부)
+        String imageUrl,
+        String inputMethod,
+        String requiredSequenceType
 ) implements QuizQuestionDto{
     public MemoryQuizQuestionDto{
         if (quizType == null || quizType!=EQuizType.MEMORY){

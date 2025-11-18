@@ -98,7 +98,9 @@ public class QuizConverter {
 
         return new MemoryQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(),
-                detail.inputMethod(), detail.requiredSequenceType()
+              detail.imageUrl(),
+                detail.inputMethod,
+                detail.requiredSequenceType
         );
     }
 
@@ -131,8 +133,9 @@ public class QuizConverter {
     }
 
     private record MemoryDetailDto(
-            String inputMethod,
-            String requiredSequenceType
+            @JsonProperty("image_url") String imageUrl,
+            @JsonProperty("input_method") String inputMethod,
+            @JsonProperty("required_sequence_type") String requiredSequenceType
     ) {
     }
 
