@@ -1,8 +1,8 @@
 package com.example.moabackend.domain.user.service;
 
-import com.example.moabackend.domain.user.dto.res.UserResponseDto;
 import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
-import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
+import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
 import com.example.moabackend.global.security.dto.JwtDTO;
 
 public interface UserService {
@@ -16,7 +16,8 @@ public interface UserService {
     JwtDTO confirmSignUpAndLogin(String phoneNumber, String authCode);
 
     // [사용자 선택 API] 역할 확정 및 부모 코드 연결 (최초 1회)
-    UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode);
+    ParentUserResponseDto selectParentRole(Long userId);
+    ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode);
 
     // [회원코드 생성 API] 부모 코드를 발급/조회
     String issueOrGetParentCode(Long userId);
