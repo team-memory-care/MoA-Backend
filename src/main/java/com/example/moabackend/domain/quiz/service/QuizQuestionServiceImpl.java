@@ -27,7 +27,9 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
 
     @Override
     public List<QuizQuestionDto> getTodayQuizSet(Long userId) {
-        List<QuizQuestion> entities = quizQuestionRepository.findTodayQuizSet();
+
+        List<Long> ids = quizQuestionRepository.findTodayQuizIds();
+        List<QuizQuestion> entities = quizQuestionRepository.findAllById(ids);
 
         if (entities.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
@@ -39,7 +41,8 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
 
     @Override
     public List<QuizQuestionDto> getQuizSetByType(Long userId, EQuizType type) {
-        List<QuizQuestion> entities = quizQuestionRepository.findQuizSetByType(type.name(), COUNT_PER_TYPE_SET);
+        List<Long> ids = quizQuestionRepository.findQuizIdsByType(type.name(), COUNT_PER_TYPE_SET);
+        List<QuizQuestion> entities = quizQuestionRepository.findAllById(ids);
         if (entities.isEmpty()) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }

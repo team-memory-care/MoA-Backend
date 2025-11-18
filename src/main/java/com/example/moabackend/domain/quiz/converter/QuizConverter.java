@@ -8,6 +8,7 @@ import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.global.exception.CustomException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,10 @@ public class QuizConverter {
         OptionsWrapper wrapper = objectMapper.readValue(detailJson, OptionsWrapper.class);
         List<String> options = wrapper.options();
 
+        if (options == null) {
+            options = List.of();
+        }
+
         return new PersistenceQuizQuestionDto(
                 entity.getId(), entity.getType(), entity.getQuestionFormat(), entity.getQuestionContent(), options
         );
@@ -121,7 +126,7 @@ public class QuizConverter {
      * PERSISTENCE, LINGUISTIC 처럼 {"options": [...]} 구조를 파싱하기 위한 Wrapper
      */
     private record OptionsWrapper(
-            List<String> options
+            @JsonProperty("answerOptions") List<String> options
     ) {
     }
 
