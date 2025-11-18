@@ -16,6 +16,7 @@ import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +69,11 @@ public class QuizResultServiceImpl implements QuizResultService {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());
             quiz.get().updateTotalNumber(quizSaveRequestDto.totalNumber());
         } else {
-            quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
+            try {
+                quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
+            } catch (DataIntegrityViolationException e) {
+                throw new CustomException(QuizErrorCode.ALREADY_SUBMITTED);
+            }
         }
     }
 

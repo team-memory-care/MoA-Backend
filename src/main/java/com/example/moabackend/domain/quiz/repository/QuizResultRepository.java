@@ -25,7 +25,7 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
             @Param("quizType") EQuizType quizType
     );
 
-    // 왼료 퀴즈 조회
+    // 완료 퀴즈 조회
     @Query("""
                 SELECT DISTINCT q.type
                 FROM QuizResult q
