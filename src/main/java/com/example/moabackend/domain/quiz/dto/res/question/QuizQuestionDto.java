@@ -1,4 +1,4 @@
-package com.example.moabackend.domain.quiz.dto.res;
+package com.example.moabackend.domain.quiz.dto.res.question;
 
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.fasterxml.jackson.annotation.JsonSubTypes;

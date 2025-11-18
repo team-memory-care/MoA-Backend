@@ -2,7 +2,7 @@ package com.example.moabackend.domain.quiz.converter;
 
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
-import com.example.moabackend.domain.quiz.dto.res.*;
+import com.example.moabackend.domain.quiz.dto.res.question.*;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;

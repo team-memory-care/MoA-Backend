@@ -1,12 +1,10 @@
-package com.example.moabackend.domain.quiz.dto.res;
+package com.example.moabackend.domain.quiz.dto.res.question;
 
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 
-import java.util.List;
-
-public record LinguisticQuizQuestionDto(
+public record MemoryQuizQuestionDto(
         // 1. 공통 필드
         Long questionId,
         EQuizType quizType,
@@ -14,10 +12,11 @@ public record LinguisticQuizQuestionDto(
         String questionContent,
         // 2. 유형별 필드
         String imageUrl,
-        List<String> answerOptions
+        String inputMethod,
+        String requiredSequenceType
 ) implements QuizQuestionDto {
-    public LinguisticQuizQuestionDto {
-        if (quizType == null || quizType != EQuizType.LINGUISTIC) {
+    public MemoryQuizQuestionDto{
+        if (quizType == null || quizType!=EQuizType.MEMORY){
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }

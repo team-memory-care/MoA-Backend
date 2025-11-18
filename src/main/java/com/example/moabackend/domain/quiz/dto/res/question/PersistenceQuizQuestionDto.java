@@ -1,21 +1,22 @@
-package com.example.moabackend.domain.quiz.dto.res;
+package com.example.moabackend.domain.quiz.dto.res.question;
 
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 
-public record AttentionQuizQuestionDto(
+import java.util.List;
+
+public record PersistenceQuizQuestionDto(
         // 1. 공통 필드
         Long questionId,
         EQuizType quizType,
         String questionFormat,
         String questionContent,
-        // 2. 유형별 필드
-        String expression,
-        String inputType
+        //2. 유형별 필드 (객관식)
+        List<String> answerOptions
 ) implements QuizQuestionDto {
-    public AttentionQuizQuestionDto {
-        if (quizType == null || quizType != EQuizType.ATTENTION) {
+    public PersistenceQuizQuestionDto {
+        if (quizType == null || quizType != EQuizType.PERSISTENCE) {
             throw new CustomException(QuizErrorCode.INVALID_QUIZ_TYPE);
         }
     }

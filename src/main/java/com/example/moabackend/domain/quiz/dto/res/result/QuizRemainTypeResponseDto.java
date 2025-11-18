@@ -1,4 +1,4 @@
-package com.example.moabackend.domain.quiz.dto.res;
+package com.example.moabackend.domain.quiz.dto.res.result;
 
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 
