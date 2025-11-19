@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         );
 
         UsernamePasswordAuthenticationToken unAuthenticatedToken =
-                new UsernamePasswordAuthenticationToken(jwtUserInfo, null, null);
+                new UsernamePasswordAuthenticationToken(jwtUserInfo, token, null);
 
         UsernamePasswordAuthenticationToken authenticatedToken =
                 (UsernamePasswordAuthenticationToken) jwtAuthenticationManager.authenticate(unAuthenticatedToken);
