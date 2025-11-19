@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum EUserStatus {
 
     ACTIVE("active"),
-    INACTIVE("inactive");
+    INACTIVE("inactive"),
+    WITHDRAWN("withdrawn");
 
     private final String value;
 }
