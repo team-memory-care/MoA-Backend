@@ -41,9 +41,10 @@ public enum GlobalErrorCode implements ErrorCode {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     NOT_SUPPORTED_URI_ERROR(HttpStatus.NOT_FOUND, "지원하지 않는 URL 입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 데이터입니다."),
-    NOT_EXIST_FILE(HttpStatus.NOT_FOUND, "존재하지 않는 파일입니다"),
-    NOT_EXIST_FILE_EXTENSION(HttpStatus.NOT_FOUND, "존재하지 않는 확장자입니다"),
-    INVALID_FILE_EXTENSION(HttpStatus.NOT_FOUND, "지원하지 않는 파일입니다"),
+    NOT_EXIST_FILE(HttpStatus.NOT_FOUND, "존재하지 않는 파일입니다."),
+    NOT_EXIST_FILE_EXTENSION(HttpStatus.NOT_FOUND, "존재하지 않는 확장자입니다."),
+    INVALID_FILE_EXTENSION(HttpStatus.NOT_FOUND, "지원하지 않는 파일입니다."),
+    INVALID_QUIZ_TYPE(HttpStatus.NOT_FOUND, "지원하지 않는 퀴즈 유형입니다."),
     /**
      * 405 : 지원하지 않는 HTTP Method (Method Not Allowed)
      */

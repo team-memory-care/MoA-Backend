@@ -1,7 +1,7 @@
 package com.example.moabackend.domain.quiz.repository;
 
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

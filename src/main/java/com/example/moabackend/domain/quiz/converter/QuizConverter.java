@@ -7,6 +7,7 @@ import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,6 +31,9 @@ public class QuizConverter {
      * @return 해당 유형의 QuizQuestionDto (Persistence, Memory 등)
      */
     public QuizQuestionDto toDto(QuizQuestion entity) {
+        if (entity == null || entity.getType() == null) {
+            throw new CustomException(GlobalErrorCode.INVALID_QUIZ_TYPE);
+        }
         EQuizType type = entity.getType();
         String detailJson = entity.getDetailData();
 
