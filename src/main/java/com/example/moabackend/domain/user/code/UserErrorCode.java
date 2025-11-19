@@ -13,7 +13,7 @@ public enum UserErrorCode implements ErrorCode {
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "부모/자녀 외의 역할을 선택했습니다."),
     INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않거나 만료되었습니다."), // NOTE: 인증번호 불일치와 만료를 분리하여 사용 권장
     AUTH_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호가 만료되었습니다."),
-    INVALID_PARENT_CODE(HttpStatus.NOT_FOUND, "입력된 부모 회원 코드를 가진 사용자가 존재하지 않습니다."), // NOTE: 입력값 문제이므로 400 BAD_REQUEST 권장
+    INVALID_PARENT_CODE(HttpStatus.BAD_REQUEST, "입력된 부모 회원 코드를 가진 사용자가 존재하지 않습니다."), // NOTE: 입력값 문제이므로 400 BAD_REQUEST 권장
     CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "고유 코드 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.")
     ;
 

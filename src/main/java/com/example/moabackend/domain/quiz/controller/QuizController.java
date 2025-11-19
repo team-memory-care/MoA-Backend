@@ -1,8 +1,8 @@
 package com.example.moabackend.domain.quiz.controller;
 
+import com.example.moabackend.domain.quiz.code.success.QuizSuccessCode;
 import com.example.moabackend.domain.quiz.dto.req.QuizSaveRequestDto;
 import com.example.moabackend.domain.quiz.dto.res.QuizRemainTypeResponseDto;
-import com.example.moabackend.domain.quiz.code.success.QuizSuccessCode;
 import com.example.moabackend.domain.quiz.service.QuizResultService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;

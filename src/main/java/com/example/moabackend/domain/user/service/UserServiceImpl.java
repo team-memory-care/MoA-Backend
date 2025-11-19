@@ -1,8 +1,9 @@
 package com.example.moabackend.domain.user.service;
 
 import com.example.moabackend.domain.user.code.UserErrorCode;
-import com.example.moabackend.domain.user.dto.res.UserResponseDto;
 import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
+import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
+import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
@@ -116,7 +117,6 @@ public class UserServiceImpl implements UserService {
                 .status(EUserStatus.ACTIVE)
                 .birthDate(parsed)
                 .parentCode(null)
-                .connectedParentCode(null)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -128,29 +128,33 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional // 쓰기 작업 필요
-    public UserResponseDto selectRoleAndLinkParent(Long userId, ERole role, String parentCode) {
+    public ParentUserResponseDto selectParentRole(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PENDING) {
             throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
         }
 
-        String codeToIssue = null;
-        String codeToConnect = null;
+        String codeToIssue = generateUniqueParentCode();
 
-        if (role == ERole.PARENT) {
-            codeToIssue = generateUniqueParentCode();
-        } else if (role == ERole.CHILD) {
-            if (parentCode == null || !userRepository.existsByParentCode(parentCode)) {
-                throw new CustomException(UserErrorCode.INVALID_PARENT_CODE);
-            }
-            codeToConnect = parentCode;
-        } else {
-            throw new CustomException(UserErrorCode.INVALID_INPUT_VALUE);
+        user.completeRoleSelection(ERole.PARENT, codeToIssue, null);
+        return ParentUserResponseDto.from(user);
+    }
+
+    @Override
+    @Transactional // 쓰기 작업 필요
+    public ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+
+        if (user.getRole() != ERole.PENDING) {
+            throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
         }
 
-        user.completeRoleSelection(role, codeToIssue, codeToConnect);
-        return UserResponseDto.from(user);
+        User parentUser = userRepository.findByParentCode(parentCode)
+                .orElseThrow(() -> new CustomException(UserErrorCode.INVALID_PARENT_CODE));
+
+        user.completeRoleSelection(ERole.CHILD, null, parentUser);
+        return ChildUserResponseDto.from(user);
     }
 
     /**

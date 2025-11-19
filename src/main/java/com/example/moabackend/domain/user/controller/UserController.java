@@ -1,11 +1,12 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
+import com.example.moabackend.domain.user.dto.req.ChildRoleSelectionRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
 import com.example.moabackend.domain.user.dto.req.SignUpConfirmationRequestDto;
-import com.example.moabackend.domain.user.dto.req.UserRoleSelectionRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
-import com.example.moabackend.domain.user.dto.res.UserResponseDto;
+import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
+import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
@@ -48,12 +49,18 @@ public class UserController {
         return BaseResponse.success(GlobalSuccessCode.CREATED, jwt);
     }
 
-    @PostMapping("/register/select-role")
-    public BaseResponse<UserResponseDto> selectUserRole(
+    @PostMapping("/register/select-role/parent")
+    public BaseResponse<ParentUserResponseDto> selectParentRole(
             @UserId Long userId,
-            @Valid @RequestBody UserRoleSelectionRequestDto request) {
-        // 3단계: 인증된 사용자(userId)의 역할(PARENT/CHILD) 확정 및 부모-자녀 연결
-        UserResponseDto response = userService.selectRoleAndLinkParent(userId, request.role(), request.parentCode());
+            @RequestBody(required = false) Void request) {
+        ParentUserResponseDto response = userService.selectParentRole(userId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+    }
+
+    @PostMapping("/register/select-role/child")
+    public BaseResponse<ChildUserResponseDto> selectChildRole(@UserId Long userId, @Valid @RequestBody ChildRoleSelectionRequestDto request) {
+
+        ChildUserResponseDto response = userService.selectChildRoleAndLinkParent(userId, request.parentCode());
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 }
