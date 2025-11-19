@@ -41,6 +41,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private EUserGender gender;
 
+    // 자녀가 입력해서 부모랑 연결되는 코드 (부모/자녀 관계)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_user_id")
     private User parent;
