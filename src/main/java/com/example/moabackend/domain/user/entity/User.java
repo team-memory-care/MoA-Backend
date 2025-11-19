@@ -49,6 +49,33 @@ public class User {
     @Column(name = "parentCode", unique = true, nullable = true, length = 4)
     private String parentCode;
 
+    @Builder
+    public User(String name, LocalDate birthDate, String phoneNumber, ERole role,
+            EUserStatus status, EUserGender gender, String parentCode, User parent) {
+        this.name = name;
+        this.birthDate = birthDate;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+        this.status = status;
+        this.gender = gender;
+        this.parentCode = parentCode;
+        this.parent = parent;
+    }
+
+    public void withdraw() {
+        this.status = EUserStatus.WITHDRAWN;
+    }
+
+    public void reRegister(String name, LocalDate birthDate, EUserGender gender) {
+        this.name = name;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.status = EUserStatus.ACTIVE;
+        this.role = ERole.PENDING;
+        this.parent = null;
+        this.parentCode = null;
+    }
+
     // 로그인 성공시 상태를 ACTIVE로 변경
     public void activate() {
         this.status = EUserStatus.ACTIVE;
@@ -64,17 +91,5 @@ public class User {
     // 부모 코드 발급/업데이트 (parentCode는 한 번 발급되면 바뀌지 않아야 함)
     public void setParentCode(String code) {
         this.parentCode = code;
-    }
-
-    @Builder
-    public User(String name, LocalDate birthDate, String phoneNumber, ERole role, EUserStatus status, EUserGender gender, String parentCode, User parent) {
-        this.name = name;
-        this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
-        this.role = role;
-        this.status = status;
-        this.gender = gender;
-        this.parentCode = parentCode;
-        this.parent = parent;
     }
 }
