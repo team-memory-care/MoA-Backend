@@ -56,6 +56,10 @@ jobs:
       COOLSMS_API_KEY: ${{ secrets.COOLSMS_API_KEY }}
       COOLSMS_API_SECRET: ${{ secrets.COOLSMS_API_SECRET }}
       COOLSMS_API_SENDER_NUMBER: ${{ secrets.COOLSMS_API_SENDER_NUMBER }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
     # 6️⃣ EC2에 SSH 접속해서 배포
     steps:
       - name: Checkout
@@ -76,7 +80,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, BUCKET_NAME
           script: |
             cd ~/deploy
             ./deploy.sh
