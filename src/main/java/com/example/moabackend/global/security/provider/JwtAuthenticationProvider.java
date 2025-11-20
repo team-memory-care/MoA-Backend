@@ -21,12 +21,12 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         log.info("AuthenticationProvider 진입 성공");
         log.info("로그인 한 사용자 검증 과정");
-        return authOfAfterLogin((JwtUserInfo) authentication.getPrincipal());
+        return authOfAfterLogin((JwtUserInfo) authentication.getPrincipal(), authentication.getCredentials());
     }
 
-    private Authentication authOfAfterLogin(JwtUserInfo userInfo) {
+    private Authentication authOfAfterLogin(JwtUserInfo userInfo, Object credentials) {
         UserPrincipal userPrincipal = customUserDetailService.loadUserById(userInfo.userId());
-        return new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userPrincipal, credentials, userPrincipal.getAuthorities());
     }
 
     @Override

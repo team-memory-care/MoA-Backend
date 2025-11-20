@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<BaseResponse<Void>> handleMessageNotReadable(HttpMessageNotReadableException e) {
-        return convert(GlobalErrorCode.BAD_JSON, e.getMessage());
+        return convert(GlobalErrorCode.BAD_JSON);
     }
 
     /**
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<BaseResponse<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
-        return convert(GlobalErrorCode.VALIDATION_ERROR, extractErrorMessage(e.getFieldErrors()));
+        return convert(GlobalErrorCode.VALIDATION_ERROR);
     }
 
     /**
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<BaseResponse<Void>> handleConstraintViolation(DataIntegrityViolationException e) {
-        return convert(GlobalErrorCode.CONSTRAINT_VIOLATION, e.getMessage());
+        return convert(GlobalErrorCode.CONSTRAINT_VIOLATION);
     }
 
     /**
@@ -96,7 +96,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<BaseResponse<Void>> handleMissingRequestHeader(MissingRequestHeaderException e) {
-        return convert(GlobalErrorCode.MISSING_REQUEST_HEADER, e.getMessage());
+        return convert(GlobalErrorCode.MISSING_REQUEST_HEADER);
     }
 
     /**
@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<BaseResponse<Void>> handleAnyException(RuntimeException e, WebRequest request) {
-        return convert(GlobalErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
+        return convert(GlobalErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -112,13 +112,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse<Void>> handleAnyException(Exception e, WebRequest request) {
-        return convert(GlobalErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
+        return convert(GlobalErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<BaseResponse<Void>> convert(ErrorCode code) {
         return ResponseEntity
                 .status(code.getStatus())
-                .body(BaseResponse.fail(code));
+                .body(BaseResponse.fail(code, code.getMessage()));
     }
 
     private ResponseEntity<BaseResponse<Void>> convert(ErrorCode code, String message) {

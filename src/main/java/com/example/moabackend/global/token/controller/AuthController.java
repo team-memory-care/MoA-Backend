@@ -3,18 +3,19 @@ package com.example.moabackend.global.token.controller;
 import com.example.moabackend.domain.user.code.UserSuccessCode;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
+import com.example.moabackend.global.annotation.UserId;
 import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
+import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
+import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
+import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 import com.example.moabackend.global.token.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,5 +58,31 @@ public class AuthController {
     public BaseResponse<String> issueParentCode(@AuthenticationPrincipal Long userId) {
         String code = userService.issueOrGetParentCode(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, code);
+    }
+
+    @PostMapping("/token/reissue")
+    @Operation(summary = "refresh token 재발급", description = "refreshToken 재발급 API입니다.")
+    public BaseResponse<ReissueTokenResponseDto> reissue(
+            @RequestBody ReissueTokenRequestDto reissueTokenRequestDto
+    ) {
+        return BaseResponse.success(UserSuccessCode.REISSUE_SUCCESS, authService.reissueToken(reissueTokenRequestDto));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "로그아웃 API입니다.")
+    public BaseResponse<Void> logout(
+            @RequestBody LogoutRequestDto logoutRequestDto
+    ) {
+        authService.logout(logoutRequestDto);
+        return BaseResponse.success(UserSuccessCode.LOGOUT_SUCCESS, null);
+    }
+
+    @DeleteMapping("/withdraw")
+    @Operation(summary = "회원 탈퇴", description = "회원탈퇴 API입니다.")
+    public BaseResponse<Void> withdraw(
+            @UserId Long userId
+    ) {
+        authService.withdraw(userId);
+        return BaseResponse.success(UserSuccessCode.USER_WITHDRAW_SUCCESS, null);
     }
 }
