@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
@@ -41,8 +41,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private EUserGender gender;
 
+    // 자녀가 입력해서 부모랑 연결되는 코드 (부모/자녀 관계)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_user_id")
+    @JoinColumn(name = "parent_user_id", nullable = true)
     private User parent;
 
     // 부모 사용자에게 발급되는 4자리 개인 회원코드
@@ -51,7 +52,7 @@ public class User {
 
     @Builder
     public User(String name, LocalDate birthDate, String phoneNumber, ERole role,
-            EUserStatus status, EUserGender gender, String parentCode, User parent) {
+                EUserStatus status, EUserGender gender, String parentCode, User parent) {
         this.name = name;
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;

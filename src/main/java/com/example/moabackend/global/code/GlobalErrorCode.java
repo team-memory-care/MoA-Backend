@@ -41,6 +41,10 @@ public enum GlobalErrorCode implements ErrorCode {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     NOT_SUPPORTED_URI_ERROR(HttpStatus.NOT_FOUND, "지원하지 않는 URL 입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 데이터입니다."),
+    NOT_EXIST_FILE(HttpStatus.NOT_FOUND, "존재하지 않는 파일입니다."),
+    NOT_EXIST_FILE_EXTENSION(HttpStatus.NOT_FOUND, "존재하지 않는 확장자입니다."),
+    INVALID_FILE_EXTENSION(HttpStatus.NOT_FOUND, "지원하지 않는 파일입니다."),
+    INVALID_QUIZ_TYPE(HttpStatus.NOT_FOUND, "지원하지 않는 퀴즈 유형입니다."),
     /**
      * 405 : 지원하지 않는 HTTP Method (Method Not Allowed)
      */
@@ -60,6 +64,7 @@ public enum GlobalErrorCode implements ErrorCode {
     BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "다른 서버로부터 잘못된 응답이 수신되었습니다."),
     INSUFFICIENT_STORAGE(HttpStatus.INSUFFICIENT_STORAGE, "서버의 용량이 부족해 요청에 실패했습니다."),
     UNSUPPORTED_ENCODING(HttpStatus.INTERNAL_SERVER_ERROR, "지원하지 않는 인코딩입니다."),
+    IO_EXCEPTION_UPLOAD_FILE(HttpStatus.INTERNAL_SERVER_ERROR, "파일 입출력에 실패했습니다."),
     ;
 
     private final HttpStatus status;
