@@ -138,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
 
         refreshTokenService.updateRefreshToken(userId, jwtDto.refreshToken());
 
-        return ReissueTokenResponseDto.from(jwtDto.accessToken());
+        return ReissueTokenResponseDto.from(jwtDto.accessToken(), jwtDto.refreshToken(), role);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class AuthServiceImpl implements AuthService {
 
         String jti = jwtUtil.getJti(accessToken);
         long expire = jwtUtil.getAccessTokenRemainingMillis(accessToken);
-        if(expire > 0) {
+        if (expire > 0) {
             accessTokenDenyService.deny(jti, Duration.ofSeconds(expire));
         }
 
