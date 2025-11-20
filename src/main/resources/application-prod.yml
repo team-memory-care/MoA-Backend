@@ -2,6 +2,13 @@ spring:
   web:
     resources:
       add-mappings: false
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 0B
+      max-file-size: 100MB
+      max-request-size: 100MB
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -44,6 +51,13 @@ jwt:
 
 server:
   domain: ${DOMAIN_NAME}
+
+aws:
+  s3:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+    bucket-name: ${BUCKET_NAME}
+  region: ${AWS_REGION}
 
 coolsms:
   api:

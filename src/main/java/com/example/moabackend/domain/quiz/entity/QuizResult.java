@@ -3,6 +3,7 @@ package com.example.moabackend.domain.quiz.entity;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,31 +12,34 @@ import java.time.LocalDate;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "date", "type"})
+})
 public class QuizResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column
-    private Integer totalNumber;
+    @Column(nullable = false)
+    private int totalNumber;
 
-    @Column
-    private Integer correctNumber;
+    @Column(nullable = false)
+    private int correctNumber;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private EQuizType type;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate date;
 
     @Builder
-    public QuizResult(User user, Integer totalNumber, Integer correctNumber, EQuizType type, LocalDate date) {
+    public QuizResult(User user, int totalNumber, int correctNumber, EQuizType type, LocalDate date) {
         this.user = user;
         this.totalNumber = totalNumber;
         this.correctNumber = correctNumber;
@@ -43,7 +47,11 @@ public class QuizResult {
         this.date = date;
     }
 
-    public void updateCorrectNumber(int newCorrectNumber) {
-        this.correctNumber = newCorrectNumber;
+    public void updateCorrectNumber(int newCorrectCount) {
+        this.correctNumber += newCorrectCount;
+    }
+
+    public void updateTotalNumber(int newTotalCount) {
+        this.totalNumber += newTotalCount;
     }
 }
