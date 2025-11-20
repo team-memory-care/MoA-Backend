@@ -8,6 +8,7 @@ import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class QuizQuestionServiceImpl implements QuizQuestionService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizConverter quizConverter;
@@ -34,6 +36,10 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
         if (entities.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
+
+        // [테스트용 코드 추가] 정답 로그 출력
+        entities.forEach(q -> log.info(">>> [TEST_LOG] ID: {}, Type: {}, Answer: {}", q.getId(), q.getType(), q.getAnswer()));
+
         List<QuizQuestionDto> quizSet = entities.stream().map(quizConverter::toDto).collect(Collectors.toList());
         Collections.shuffle(quizSet);
         return quizSet;
@@ -46,6 +52,8 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
         if (entities.isEmpty()) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
+        // [테스트용 코드 추가] 정답 로그 출력
+        entities.forEach(q -> log.info(">>> [TEST_LOG] ID: {}, Type: {}, Answer: {}", q.getId(), q.getType(), q.getAnswer()));
         return entities.stream().map(quizConverter::toDto).collect(Collectors.toList());
     }
 }
