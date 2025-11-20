@@ -52,8 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * [회원가입 1단계] 사용자 기본 정보를 Redis에 임시 저장합니다.
-     * 키: SIGNUP_TEMP_KEY_PREFIX + 전화번호
+     * [회원가입 1단계] 사용자 기본 정보를 Redis에 임시 저장합니다. 키: SIGNUP_TEMP_KEY_PREFIX + 전화번호
      */
     @Override
     @Transactional // 쓰기 작업 필요
@@ -72,9 +71,12 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = false)
     public String requestSignUpSms(String phoneNumber) {
         // DB에 이미 존재하는지 확인 (회원가입이므로 없어야 함)
-        if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
-        }
+        // DB에 이미 존재하는지 확인 (회원가입이므로 없어야 함, 단 탈퇴 회원은 허용)
+        userRepository.findByPhoneNumber(phoneNumber).ifPresent(user -> {
+            if (user.getStatus() != EUserStatus.WITHDRAWN) {
+                throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+            }
+        });
         // 회원가입용 인증 코드 발송 (AuthService에 분리된 로직 호출)
         return authService.generateSignUpAuthCode(phoneNumber);
     }
@@ -101,8 +103,18 @@ public class UserServiceImpl implements UserService {
         redisService.deleteData(redisKey); // 임시 데이터 최종 삭제
 
         // 2-1. 최종 등록 직전 중복 체크 (Double Check, Race Condition 방지)
-        if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+        User existUser = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
+
+        if (existUser != null) {
+            if (existUser.getStatus() != EUserStatus.WITHDRAWN) {
+                throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
+
+            existUser.reRegister(request.name(), parsed, request.gender());
+            return authService.generateTokensForUser(existUser);
         }
 
         // 3. DB 저장 (User 엔티티 생성)
@@ -129,7 +141,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional // 쓰기 작업 필요
     public ParentUserResponseDto selectParentRole(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PENDING) {
             throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
@@ -144,7 +157,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional // 쓰기 작업 필요
     public ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PENDING) {
             throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
@@ -163,7 +177,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional // 쓰기 작업 필요
     public String issueOrGetParentCode(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
         if (user.getRole() != ERole.PARENT) {
             throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
