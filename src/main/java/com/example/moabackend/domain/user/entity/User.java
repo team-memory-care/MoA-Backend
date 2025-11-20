@@ -77,12 +77,6 @@ public class User {
         this.parentCode = null;
     }
 
-
-    // 자녀가 입력해서 부모랑 연결되는 코드
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_user_id", nullable = true)
-    private User parent;
-
     // 로그인 성공시 상태를 ACTIVE로 변경
     public void activate() {
         this.status = EUserStatus.ACTIVE;
