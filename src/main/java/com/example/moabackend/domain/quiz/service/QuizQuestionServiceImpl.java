@@ -52,6 +52,7 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
         if (entities.isEmpty()) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
+
         // [테스트용 코드 추가] 정답 로그 출력
         entities.forEach(q -> log.info(">>> [TEST_LOG] ID: {}, Type: {}, Answer: {}", q.getId(), q.getType(), q.getAnswer()));
         return entities.stream().map(quizConverter::toDto).collect(Collectors.toList());
