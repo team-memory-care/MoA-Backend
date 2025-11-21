@@ -9,6 +9,7 @@ public class Constants {
     public static String ACCESS_TOKEN_DENY = "access_token:deny:";
 
     public static List<String> NO_NEED_AUTH = List.of(
+            // [1] 누구나 접근 가능한 시스템/문서 경로
             "/api/v1/health-check",
             "/swagger",
             "/swagger-ui.html",
@@ -16,19 +17,16 @@ public class Constants {
             "/api-docs",
             "/api-docs/**",
             "/v3/api-docs/**",
-            "/api/v1/auth/reissue",
-            "/api/v1/auth/logout",
+
+            // [2] 로그인/가입 전이라 토큰이 없는 경우
             "/api/v1/users/signup",
-            "/api/v1/users/signup-confirm",
-            "/api/v1/users/login",
-            "/api/v1/users/register",
-            "/api/v1/users/register/code-request",
-            "/api/v1/users/register/code-complete",
-            "/api/v1/auth/send-code",
-            "/api/v1/auth/verify-code",
+            "/api/v1/users/signup/sms",
+
+            // [3] 인증 관련 (로그인, 재발급 등은 내부에서 검증하거나 토큰 없이 호출됨)
+            "/api/v1/auth/token/reissue",
             "/api/v1/auth/sms/request",
             "/api/v1/auth/login",
-            "/api/v1/auth/code/issue",
+
             "/api/v1/s3/upload"
     );
 }
