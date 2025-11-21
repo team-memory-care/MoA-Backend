@@ -3,8 +3,7 @@ package com.example.moabackend.domain.user.controller;
 import com.example.moabackend.domain.user.code.UserSuccessCode;
 import com.example.moabackend.domain.user.dto.req.ChildRoleSelectionRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
-import com.example.moabackend.domain.user.dto.req.SignUpConfirmationRequestDto;
-import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
+import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
 import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
 import com.example.moabackend.domain.user.dto.res.UserResponseDto;
@@ -26,13 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/register")
-    public BaseResponse<Void> preSignUp(@Valid @RequestBody UserSignUpRequestDto request) {
-        // 1단계: 기본 정보와 전화번호를 Redis에 임시 저장 (전화번호를 Redis 키로 사용)
-        userService.preSignUp(request);
-        return BaseResponse.success(UserSuccessCode.USER_REGISTER_TEMP_SAVED, null);
-    }
-
     @PostMapping("/register/code-request")
     public BaseResponse<Void> requestSignUpSms(@Valid @RequestBody PhoneNumberRequestDto request) {
         // 2-1단계: 전화번호 중복 체크 후, 회원가입용 인증 코드를 발송
@@ -43,9 +35,9 @@ public class UserController {
     @PostMapping("/register/code-complete")
     @ResponseStatus(HttpStatus.CREATED)
     public BaseResponse<JwtDTO> confirmSignUp(
-            @Valid @RequestBody SignUpConfirmationRequestDto request) {
+            @Valid @RequestBody UserRegisterRequestDto request) {
         // 2-2단계: 인증 코드 검증 및 Redis 임시 데이터로 DB에 최종 사용자 생성, JWT 토큰 발행
-        JwtDTO jwt = userService.confirmSignUpAndLogin(request.phoneNumber(), request.authCode());
+        JwtDTO jwt = userService.confirmSignUpAndLogin(request);
         return BaseResponse.success(GlobalSuccessCode.CREATED, jwt);
     }
 
