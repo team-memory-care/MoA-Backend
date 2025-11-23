@@ -4,6 +4,7 @@ import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
 import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
+import com.example.moabackend.domain.user.dto.res.UserResponseDto;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
@@ -185,5 +186,12 @@ public class UserServiceImpl implements UserService {
         String newCode = generateUniqueParentCode();
         user.setParentCode(newCode);
         return newCode;
+    }
+
+    @Override
+    public UserResponseDto findUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+        return UserResponseDto.from(user);
     }
 }
