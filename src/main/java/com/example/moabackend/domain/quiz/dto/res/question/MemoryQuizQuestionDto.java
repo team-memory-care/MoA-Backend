@@ -14,6 +14,7 @@ public record MemoryQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
+        String answer,
 
         // 2. 유형별 필드
         String imageUrl,
@@ -39,10 +40,10 @@ public record MemoryQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
+                    entity.getAnswer(),
                     jsonNode.path("image_url").asText(),
                     jsonNode.path("input_method").asText(),
-                    jsonNode.path("required_sequence_type").asText()
-            );
+                    jsonNode.path("required_sequence_type").asText());
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }

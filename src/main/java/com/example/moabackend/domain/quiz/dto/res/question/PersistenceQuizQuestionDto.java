@@ -18,10 +18,10 @@ public record PersistenceQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
+        String answer,
 
-        //2. 유형별 필드 (객관식)
-        List<String> answerOptions
-) implements QuizQuestionDto {
+        // 2. 유형별 필드 (객관식)
+        List<String> answerOptions) implements QuizQuestionDto {
 
     // [1] 컴팩트 생성자: 데이터 검증
     public PersistenceQuizQuestionDto {
@@ -38,8 +38,7 @@ public record PersistenceQuizQuestionDto(
             List<String> options = objectMapper.convertValue(
                     jsonNode.path("answerOptions"),
                     new TypeReference<List<String>>() {
-                    }
-            );
+                    });
 
             if (options == null) {
                 options = Collections.emptyList();
@@ -49,8 +48,8 @@ public record PersistenceQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
-                    options
-            );
+                    entity.getAnswer(),
+                    options);
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }

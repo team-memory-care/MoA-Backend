@@ -18,10 +18,10 @@ public record SpacetimeQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
+        String answer,
 
         // 2. 유형별 필드
-        List<String> imageOptionsUrl
-) implements QuizQuestionDto {
+        List<String> imageOptionsUrl) implements QuizQuestionDto {
 
     // [1] 컴팩트 생성자: 데이터 검증
     public SpacetimeQuizQuestionDto {
@@ -38,8 +38,7 @@ public record SpacetimeQuizQuestionDto(
             List<String> options = objectMapper.convertValue(
                     jsonNode.path("imageOptionsUrl"),
                     new TypeReference<List<String>>() {
-                    }
-            );
+                    });
 
             if (options == null) {
                 options = Collections.emptyList();
@@ -50,8 +49,8 @@ public record SpacetimeQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
-                    options
-            );
+                    entity.getAnswer(),
+                    options);
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
