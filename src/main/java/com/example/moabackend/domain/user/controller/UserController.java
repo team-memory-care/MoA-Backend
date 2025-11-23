@@ -7,6 +7,7 @@ import com.example.moabackend.domain.user.dto.req.SignUpConfirmationRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserSignUpRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
 import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
+import com.example.moabackend.domain.user.dto.res.UserResponseDto;
 import com.example.moabackend.domain.user.service.UserService;
 import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
@@ -26,7 +27,6 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.ACCEPTED)
     public BaseResponse<Void> preSignUp(@Valid @RequestBody UserSignUpRequestDto request) {
         // 1단계: 기본 정보와 전화번호를 Redis에 임시 저장 (전화번호를 Redis 키로 사용)
         userService.preSignUp(request);
@@ -58,9 +58,17 @@ public class UserController {
     }
 
     @PostMapping("/register/select-role/child")
-    public BaseResponse<ChildUserResponseDto> selectChildRole(@UserId Long userId, @Valid @RequestBody ChildRoleSelectionRequestDto request) {
+    public BaseResponse<ChildUserResponseDto> selectChildRole(@UserId Long userId,
+            @Valid @RequestBody ChildRoleSelectionRequestDto request) {
 
         ChildUserResponseDto response = userService.selectChildRoleAndLinkParent(userId, request.parentCode());
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me")
+    public BaseResponse<UserResponseDto> getUserInfo(
+            @UserId Long userId) {
+        UserResponseDto response = userService.findUserById(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 }
