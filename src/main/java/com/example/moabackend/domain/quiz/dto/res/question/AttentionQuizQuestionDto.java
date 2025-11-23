@@ -14,6 +14,7 @@ public record AttentionQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
+        String answer,
 
         // 2. 유형별 필드
         String expression,
@@ -38,9 +39,9 @@ public record AttentionQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
+                    entity.getAnswer(),
                     jsonNode.path("expression").asText(),
-                    jsonNode.path("inputType").asText()
-            );
+                    jsonNode.path("inputType").asText());
 
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);

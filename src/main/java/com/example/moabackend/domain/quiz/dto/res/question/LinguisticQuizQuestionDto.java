@@ -18,6 +18,7 @@ public record LinguisticQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
+        String answer,
 
         // 2. 유형별 필드
         String imageUrl,
@@ -40,8 +41,8 @@ public record LinguisticQuizQuestionDto(
 
             List<String> options = objectMapper.convertValue(
                     jsonNode.path("answerOptions"),
-                    new TypeReference<List<String>>() {}
-            );
+                    new TypeReference<List<String>>() {
+                    });
 
             if (options == null) {
                 options = Collections.emptyList();
@@ -52,9 +53,9 @@ public record LinguisticQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
+                    entity.getAnswer(),
                     jsonNode.path("imageUrl").asText(),
-                    options
-            );
+                    options);
 
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
