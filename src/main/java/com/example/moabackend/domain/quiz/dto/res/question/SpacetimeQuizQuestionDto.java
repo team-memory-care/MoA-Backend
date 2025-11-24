@@ -4,6 +4,7 @@ import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +22,9 @@ public record SpacetimeQuizQuestionDto(
         String answer,
 
         // 2. 유형별 필드
-        List<String> imageOptionsUrl) implements QuizQuestionDto {
+        String questionImageUrl,
+        List<String> imageOptionsUrl
+) implements QuizQuestionDto {
 
     // [1] 컴팩트 생성자: 데이터 검증
     public SpacetimeQuizQuestionDto {
@@ -35,14 +38,21 @@ public record SpacetimeQuizQuestionDto(
         try {
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
-            List<String> options = objectMapper.convertValue(
+            String rawQuestionImage = jsonNode.path("questionImageUrl").asText("");
+            String processedQuestionImage = S3UrlUtils.convertToHttpUrl(rawQuestionImage);
+
+            List<String> rawOptions = objectMapper.convertValue(
                     jsonNode.path("imageOptionsUrl"),
                     new TypeReference<List<String>>() {
                     });
 
-            if (options == null) {
-                options = Collections.emptyList();
+            if (rawOptions == null) {
+                rawOptions = Collections.emptyList();
             }
+
+            List<String> processedOptions = rawOptions.stream()
+                    .map(S3UrlUtils::convertToHttpUrl)
+                    .toList();
 
             return new SpacetimeQuizQuestionDto(
                     entity.getId(),
@@ -50,7 +60,9 @@ public record SpacetimeQuizQuestionDto(
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    options);
+                    processedQuestionImage,
+                    processedOptions
+            );
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
