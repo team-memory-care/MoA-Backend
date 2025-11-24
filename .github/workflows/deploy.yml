@@ -4,8 +4,11 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  DOCKER_IMAGE: moA/moA
+
 jobs:
-  build-and-deploy:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,18 +41,46 @@ jobs:
           docker buildx build \
             --platform linux/amd64 \
             -t ${{ secrets.DOCKER_USERNAME }}/moa-backend:latest \
-            --push \
-            -f ./Dockerfile .
+            --push .
+  cd:
+    needs: [ ci ]
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ACCESS_TOKEN_EXPIRATION: ${{ secrets.ACCESS_TOKEN_EXPIRATION }}
+      REFRESH_TOKEN_EXPIRATION: ${{ secrets.REFRESH_TOKEN_EXPIRATION }}
+      COOLSMS_API_KEY: ${{ secrets.COOLSMS_API_KEY }}
+      COOLSMS_API_SECRET: ${{ secrets.COOLSMS_API_SECRET }}
+      COOLSMS_API_SENDER_NUMBER: ${{ secrets.COOLSMS_API_SENDER_NUMBER }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+    # 6️⃣ EC2에 SSH 접속해서 배포
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      # 6️⃣ EC2에 SSH 접속해서 배포
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "~/deploy/"
+
       - name: "🚀 Deploy to EC2"
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, BUCKET_NAME
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/moa-backend:latest
-            sudo docker stop moa-backend || true
-            sudo docker rm moa-backend || true
-            sudo docker run -d -p 8080:8080 --name moa-backend ${{ secrets.DOCKER_USERNAME }}/moa-backend:latest
+            cd ~/deploy
+            ./deploy.sh
