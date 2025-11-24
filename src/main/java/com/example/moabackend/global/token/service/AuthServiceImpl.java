@@ -1,14 +1,5 @@
 package com.example.moabackend.global.token.service;
 
-import java.security.SecureRandom;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.entity.type.ERole;
@@ -22,8 +13,15 @@ import com.example.moabackend.global.security.utils.JwtUtil;
 import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
