@@ -30,7 +30,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AuthService authService;
-    // NOTE: 임시저장 로직 제거로 RedisService, 상수는 삭제했습니다.
 
     /**
      * 부모용 고유 코드(4자리) 생성
@@ -145,7 +144,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
         return UserResponseDto.from(user);
     }
-}
 
     private JwtDTO reRegisterUser(User user, UserRegisterRequestDto request) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
