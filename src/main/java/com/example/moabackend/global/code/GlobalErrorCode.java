@@ -28,7 +28,7 @@ public enum GlobalErrorCode implements ErrorCode {
     TOKEN_UNSUPPORTED_ERROR(HttpStatus.UNAUTHORIZED, "지원하지않는 토큰입니다."),
     EXPIRED_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     TOKEN_UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "자격 증명이 이루어지지 않았습니다."), // NOTE: 권한 부족은 403 FORBIDDEN 권장
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "자격 증명이 이루어지지 않았습니다."),
 
     /**
      * 403 : 권한 부족 (Authorization)
@@ -53,8 +53,8 @@ public enum GlobalErrorCode implements ErrorCode {
     /**
      * 409 : 충돌 (Conflict)
      */
-    CONSTRAINT_VIOLATION(HttpStatus.CONFLICT, "데이터베이스 제약 조건에 위배되었습니다."), // NOTE: 400 -> 409 CONFLICT 권장
-    ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다."), // NOTE: 400 -> 409 CONFLICT 권장
+    CONSTRAINT_VIOLATION(HttpStatus.CONFLICT, "데이터베이스 제약 조건에 위배되었습니다."),
+    ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다."),
 
     /**
      * 500 : 응답 실패 (Internal Server Error)
