@@ -3,8 +3,8 @@ package com.example.moabackend.domain.quiz.dto.res.question;
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
-import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,7 +39,7 @@ public record SpacetimeQuizQuestionDto(
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
             String rawQuestionImage = jsonNode.path("questionImageUrl").asText("");
-            String processedQuestionImage = convertToHttpUrl(rawQuestionImage);
+            String processedQuestionImage = S3UrlUtils.convertToHttpUrl(rawQuestionImage);
 
             List<String> rawOptions = objectMapper.convertValue(
                     jsonNode.path("imageOptionsUrl"),
@@ -51,7 +51,7 @@ public record SpacetimeQuizQuestionDto(
             }
 
             List<String> processedOptions = rawOptions.stream()
-                    .map(SpacetimeQuizQuestionDto::convertToHttpUrl)
+                    .map(S3UrlUtils::convertToHttpUrl)
                     .toList();
 
             return new SpacetimeQuizQuestionDto(
@@ -66,21 +66,5 @@ public record SpacetimeQuizQuestionDto(
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
-    }
-
-    private static String convertToHttpUrl(String rawKey) {
-        if (rawKey == null || rawKey.isBlank()) return "";
-
-        if (rawKey.startsWith("http")) {
-            return rawKey;
-        }
-
-        if (rawKey.startsWith("s3://")) {
-            int slashIndex = rawKey.indexOf("/", 5);
-            if (slashIndex != -1) {
-                rawKey = rawKey.substring(slashIndex + 1);
-            }
-        }
-        return Constants.S3_URL_PREFIX + rawKey;
     }
 }

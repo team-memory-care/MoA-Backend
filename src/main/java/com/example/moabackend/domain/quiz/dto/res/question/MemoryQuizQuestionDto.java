@@ -5,6 +5,7 @@ import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +38,7 @@ public record MemoryQuizQuestionDto(
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
             String rawImageKey = jsonNode.path("image_url").asText();
-            String fullImageUrl = convertToHttpUrl(rawImageKey);
+            String fullImageUrl = S3UrlUtils.convertToHttpUrl(rawImageKey);
 
             return new MemoryQuizQuestionDto(
                     entity.getId(),
@@ -45,24 +46,11 @@ public record MemoryQuizQuestionDto(
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    jsonNode.path("image_url").asText(),
+                    fullImageUrl,
                     jsonNode.path("input_method").asText(),
                     jsonNode.path("required_sequence_type").asText());
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
-    }
-
-    private static String convertToHttpUrl(String rawKey) {
-        if (rawKey == null || rawKey.isBlank()) return "";
-        if (rawKey.startsWith("http")) return rawKey;
-
-        if (rawKey.startsWith("s3://")) {
-            int slashIndex = rawKey.indexOf("/", 5);
-            if (slashIndex != -1) {
-                rawKey = rawKey.substring(slashIndex + 1);
-            }
-        }
-        return Constants.S3_URL_PREFIX + rawKey;
     }
 }
