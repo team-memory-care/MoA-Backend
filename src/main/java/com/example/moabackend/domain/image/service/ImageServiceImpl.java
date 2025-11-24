@@ -86,8 +86,6 @@ public class ImageServiceImpl implements ImageService {
             log.error(exception.getMessage(), exception);
             throw new CustomException(GlobalErrorCode.IO_EXCEPTION_UPLOAD_FILE);
         }
-        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName))
-                .toString();
+        return s3FileName;
     }
-
 }

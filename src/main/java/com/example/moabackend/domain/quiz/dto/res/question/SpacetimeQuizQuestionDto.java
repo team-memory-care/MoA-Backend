@@ -3,6 +3,7 @@ package com.example.moabackend.domain.quiz.dto.res.question;
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
+import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,7 +22,9 @@ public record SpacetimeQuizQuestionDto(
         String answer,
 
         // 2. 유형별 필드
-        List<String> imageOptionsUrl) implements QuizQuestionDto {
+        String questionImageUrl,
+        List<String> imageOptionsUrl
+) implements QuizQuestionDto {
 
     // [1] 컴팩트 생성자: 데이터 검증
     public SpacetimeQuizQuestionDto {
@@ -35,14 +38,21 @@ public record SpacetimeQuizQuestionDto(
         try {
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
-            List<String> options = objectMapper.convertValue(
+            String rawQuestionImage = jsonNode.path("questionImageUrl").asText("");
+            String processedQuestionImage = convertToHttpUrl(rawQuestionImage);
+
+            List<String> rawOptions = objectMapper.convertValue(
                     jsonNode.path("imageOptionsUrl"),
                     new TypeReference<List<String>>() {
                     });
 
-            if (options == null) {
-                options = Collections.emptyList();
+            if (rawOptions == null) {
+                rawOptions = Collections.emptyList();
             }
+
+            List<String> processedOptions = rawOptions.stream()
+                    .map(SpacetimeQuizQuestionDto::convertToHttpUrl)
+                    .toList();
 
             return new SpacetimeQuizQuestionDto(
                     entity.getId(),
@@ -50,9 +60,27 @@ public record SpacetimeQuizQuestionDto(
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    options);
+                    processedQuestionImage,
+                    processedOptions
+            );
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
+    }
+
+    private static String convertToHttpUrl(String rawKey) {
+        if (rawKey == null || rawKey.isBlank()) return "";
+
+        if (rawKey.startsWith("http")) {
+            return rawKey;
+        }
+
+        if (rawKey.startsWith("s3://")) {
+            int slashIndex = rawKey.indexOf("/", 5);
+            if (slashIndex != -1) {
+                rawKey = rawKey.substring(slashIndex + 1);
+            }
+        }
+        return Constants.S3_URL_PREFIX + rawKey;
     }
 }

@@ -29,4 +29,6 @@ public class Constants {
 
             "/api/v1/s3/upload"
     );
+
+    public static final String S3_URL_PREFIX = "https://moa-bucket-s3.s3.ap-northeast-2.amazonaws.com/";
 }
