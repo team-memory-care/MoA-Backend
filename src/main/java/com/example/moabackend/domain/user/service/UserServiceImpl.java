@@ -125,11 +125,14 @@ public class UserServiceImpl implements UserService {
     public String issueParentCode(Long userId) {
         User user = getUserOrThrow(userId);
 
+        // [1] 권한 확인: 부모 역할이 아닌 경우
         if (user.getRole() != ERole.PARENT) {
-            throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
+            throw new CustomException(UserErrorCode.INVALID_USER);
         }
+
+        // [2] 이미 발급된 경우 확인
         if (user.getParentCode() != null) {
-            throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+            throw new CustomException(UserErrorCode.PARENT_CODE_ALREADY_EXISTS);
         }
 
         String newCode = generateUniqueParentCode();
@@ -145,13 +148,15 @@ public class UserServiceImpl implements UserService {
     public String getParentCode(Long userId) {
         User user = getUserOrThrow(userId);
 
+        // [1] 권한 확인: 부모 역할이 아닌 경우
         if (user.getRole() != ERole.PARENT) {
-            throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
+            throw new CustomException(UserErrorCode.INVALID_USER);
         }
         String parentCode = user.getParentCode();
 
+        // [2] 코드 존재 여부 확인
         if (parentCode == null) {
-            throw new CustomException(GlobalErrorCode.NOT_FOUND);
+            throw new CustomException(UserErrorCode.PARENT_CODE_NOT_FOUND);
         }
         return parentCode;
     }
