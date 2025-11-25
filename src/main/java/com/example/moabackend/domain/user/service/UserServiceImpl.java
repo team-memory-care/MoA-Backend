@@ -118,24 +118,42 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 부모 코드 조회/발급
+     * 부모 코드 발급
      */
     @Override
     @Transactional
-    public String issueOrGetParentCode(Long userId) {
+    public String issueParentCode(Long userId) {
         User user = getUserOrThrow(userId);
 
         if (user.getRole() != ERole.PARENT) {
             throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
         }
         if (user.getParentCode() != null) {
-            return user.getParentCode();
+            throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
         }
 
         String newCode = generateUniqueParentCode();
         user.setParentCode(newCode);
 
         return newCode;
+    }
+
+    /**
+     * 부모 코드 조회
+     */
+    @Override
+    public String getParentCode(Long userId) {
+        User user = getUserOrThrow(userId);
+
+        if (user.getRole() != ERole.PARENT) {
+            throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
+        }
+        String parentCode = user.getParentCode();
+
+        if (parentCode == null) {
+            throw new CustomException(GlobalErrorCode.NOT_FOUND);
+        }
+        return parentCode;
     }
 
     @Override

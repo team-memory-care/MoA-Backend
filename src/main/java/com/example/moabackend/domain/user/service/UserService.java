@@ -33,10 +33,16 @@ public interface UserService {
     ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode);
 
     /**
-     * 부모 코드 조회/발급
-     * 부모 사용자의 고유 연결 코드를 조회하거나, 없을 경우 새로 발급합니다.
+     * 부모 코드 신규 발급
+     *부모 사용자의 고유 연결 코드를 새로 발급합니다. (POST 전용)
      */
-    String issueOrGetParentCode(Long userId);
+    String issueParentCode(Long userId);
+
+    /**
+     * 부모 코드 조회
+     * 부모 사용자의 고유 연결 코드를 조회합니다. (GET 전용)
+     */
+    String getParentCode(Long userId);
 
     // [사용자 정보 조회 API]
     UserResponseDto findUserById(Long userId);
