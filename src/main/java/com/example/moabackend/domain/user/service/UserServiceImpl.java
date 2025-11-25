@@ -118,24 +118,47 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 부모 코드 조회/발급
+     * 부모 코드 발급
      */
     @Override
     @Transactional
-    public String issueOrGetParentCode(Long userId) {
+    public String issueParentCode(Long userId) {
         User user = getUserOrThrow(userId);
 
+        // [1] 권한 확인: 부모 역할이 아닌 경우
         if (user.getRole() != ERole.PARENT) {
-            throw new CustomException(GlobalErrorCode.UNAUTHORIZED);
+            throw new CustomException(UserErrorCode.INVALID_USER);
         }
+
+        // [2] 이미 발급된 경우 확인
         if (user.getParentCode() != null) {
-            return user.getParentCode();
+            throw new CustomException(UserErrorCode.PARENT_CODE_ALREADY_EXISTS);
         }
 
         String newCode = generateUniqueParentCode();
         user.setParentCode(newCode);
 
         return newCode;
+    }
+
+    /**
+     * 부모 코드 조회
+     */
+    @Override
+    public String getParentCode(Long userId) {
+        User user = getUserOrThrow(userId);
+
+        // [1] 권한 확인: 부모 역할이 아닌 경우
+        if (user.getRole() != ERole.PARENT) {
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+        String parentCode = user.getParentCode();
+
+        // [2] 코드 존재 여부 확인
+        if (parentCode == null) {
+            throw new CustomException(UserErrorCode.PARENT_CODE_NOT_FOUND);
+        }
+        return parentCode;
     }
 
     @Override
