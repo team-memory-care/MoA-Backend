@@ -65,10 +65,17 @@ public class UserController {
 
     // --- [사용자 정보 및 상태 관리] ---
 
-    @Operation(summary = "부모 코드 조회/발급", description = "부모 회원의 고유 코드를 조회하거나 새로 발급합니다.")
-    @PostMapping("/parent-code")
-    public BaseResponse<String> issueParentCode(@UserId Long userId) {
-        String code = userService.issueOrGetParentCode(userId);
+    @Operation(summary = "부모 코드 발급", description = "부모 회원의 고유 코드를 새로 발급합니다.")
+    @PostMapping("/parent-code/issue")
+    public BaseResponse<String> issueNewParentCode(@UserId Long userId) {
+        String code = userService.issueParentCode(userId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, code);
+    }
+
+    @Operation(summary = "부모 코드 조회", description = "발급된 부모 회원의 고유 코드를 조회합니다.")
+    @GetMapping("/parent-code")
+    public BaseResponse<String> getParentCode(@UserId Long userId) {
+        String code = userService.getParentCode(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, code);
     }
 
