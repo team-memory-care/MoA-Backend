@@ -3,7 +3,6 @@ package com.example.moabackend.domain.quiz.dto.res.question;
 import com.example.moabackend.domain.quiz.code.error.QuizErrorCode;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
-import com.example.moabackend.global.constant.Constants;
 import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -71,7 +71,8 @@ public class JwtUtil implements InitializingBean {
     public JwtDTO generateTokens(Long id, ERole role) {
         return JwtDTO.of(
                 generateToken(id, role, accessExpiration),
-                generateToken(id, role, refreshExpiration)
+                generateToken(id, role, refreshExpiration),
+                role
         );
     }
 
