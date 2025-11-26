@@ -16,11 +16,10 @@ import static com.example.moabackend.global.constant.RedisKey.REFRESH_TOKEN_PREF
 @Slf4j
 public class RefreshTokenService {
 
+    private final StringRedisTemplate stringRedisTemplate;
     @Value("${jwt.refresh-token.expiration}")
     @Getter
     private Long refreshExpiration;
-
-    private final StringRedisTemplate stringRedisTemplate;
 
     public void saveRefreshToken(Long userId, String refreshToken) {
         String key = REFRESH_TOKEN_PREFIX + userId;
@@ -28,37 +27,20 @@ public class RefreshTokenService {
                 key,
                 refreshToken,
                 refreshExpiration,
-                TimeUnit.MILLISECONDS
-        );
+                TimeUnit.MILLISECONDS);
     }
 
-    public void updateRefreshToken(Long userId, String refreshToken) {
-        String key = REFRESH_TOKEN_PREFIX + userId;
-        log.info("[Redis] Update refreshToken key={} value={}", key, refreshToken);
-
-        String existingToken = stringRedisTemplate.opsForValue().get(key);
-        log.info("[Redis] Existing refreshToken for {} = {}", userId, existingToken);
-
-        if (existingToken != null) {
-            deleteRefreshToken(userId);
-            log.info("[Redis] Deleted old refreshToken for {}", userId);
-        }
-
-        saveRefreshToken(userId, refreshToken);
-        log.info("[Redis] Saved new refreshToken for {} = {}", userId, refreshToken);
-    }
-
-    public String getRefreshToken(Long userId){
+    public String getRefreshToken(Long userId) {
         String key = REFRESH_TOKEN_PREFIX + userId;
         return stringRedisTemplate.opsForValue().get(key);
     }
 
-    public void deleteRefreshToken(Long userId){
+    public void deleteRefreshToken(Long userId) {
         String key = REFRESH_TOKEN_PREFIX + userId;
         stringRedisTemplate.delete(key);
     }
 
-    public boolean validateRefreshToken(Long userId, String refreshToken){
+    public boolean validateRefreshToken(Long userId, String refreshToken) {
         String storedToken = getRefreshToken(userId);
         return storedToken != null && storedToken.equals(refreshToken);
     }
