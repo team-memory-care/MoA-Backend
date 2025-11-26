@@ -19,14 +19,9 @@ public class AuthenticationResponse {
             HttpServletResponse response,
             String domain,
             JwtDTO jwtDto,
-            Integer refreshExpiration
+            Long refreshExpiration
     ) throws IOException {
-//        CookieUtil.addCookie(
-//                response,
-//                domain,
-//                Constants.ACCESS_COOKIE_NAME,
-//                jwtDto.accessToken()
-//        );
+
         CookieUtil.addSecureCookie(
                 response,
                 domain,

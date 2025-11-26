@@ -76,7 +76,7 @@ public class CookieUtil {
             String domain,
             String key,
             String value,
-            Integer maxAge
+            Long maxAge
     ) {
         ResponseCookie cookie = ResponseCookie.from(key, value)
                 .path("/")
