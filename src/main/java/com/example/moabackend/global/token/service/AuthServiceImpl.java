@@ -119,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
 
         JwtDTO jwtDto = generateTokensForUser(user);
 
-        refreshTokenService.updateRefreshToken(user.getId(), jwtDto.refreshToken());
+        refreshTokenService.saveRefreshToken(user.getId(), jwtDto.refreshToken());
 
         return jwtDto;
     }
@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
 
         JwtDTO jwtDto = jwtUtil.generateTokens(userId, role);
 
-        refreshTokenService.updateRefreshToken(userId, jwtDto.refreshToken());
+        refreshTokenService.saveRefreshToken(userId, jwtDto.refreshToken());
 
         return ReissueTokenResponseDto.from(jwtDto.accessToken(), jwtDto.refreshToken(), role);
     }
