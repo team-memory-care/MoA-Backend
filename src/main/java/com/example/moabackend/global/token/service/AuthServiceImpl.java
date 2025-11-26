@@ -39,7 +39,9 @@ public class AuthServiceImpl implements AuthService {
     private final AccessTokenDenyService accessTokenDenyService;
 
     public JwtDTO generateTokensForUser(User user) {
-        return jwtUtil.generateTokens(user.getId(), user.getRole());
+        JwtDTO jwtDto = jwtUtil.generateTokens(user.getId(), user.getRole());
+        refreshTokenService.saveRefreshToken(user.getId(), jwtDto.refreshToken());
+        return jwtDto;
     }
 
     /**
@@ -117,11 +119,7 @@ public class AuthServiceImpl implements AuthService {
             user.activate();
         }
 
-        JwtDTO jwtDto = generateTokensForUser(user);
-
-        refreshTokenService.saveRefreshToken(user.getId(), jwtDto.refreshToken());
-
-        return jwtDto;
+        return generateTokensForUser(user);
     }
 
     @Override
