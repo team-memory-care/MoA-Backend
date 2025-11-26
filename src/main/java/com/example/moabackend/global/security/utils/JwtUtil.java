@@ -30,11 +30,11 @@ public class JwtUtil implements InitializingBean {
 
     @Value("${jwt.access-token.expiration}")
     @Getter
-    private Integer accessExpiration;
+    private Long accessExpiration;
 
     @Value("${jwt.refresh-token.expiration}")
     @Getter
-    private Integer refreshExpiration;
+    private Long refreshExpiration;
 
     private Key key;
 
@@ -52,7 +52,7 @@ public class JwtUtil implements InitializingBean {
                 .getBody();
     }
 
-    public String generateToken(Long id, ERole role, Integer expiration) {
+    public String generateToken(Long id, ERole role, Long expiration) {
         Claims claims = Jwts.claims();
         claims.put(Constants.CLAIM_USER_ID, id);
         if (role != null)

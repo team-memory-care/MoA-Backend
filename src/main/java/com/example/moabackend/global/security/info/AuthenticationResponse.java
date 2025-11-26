@@ -19,14 +19,9 @@ public class AuthenticationResponse {
             HttpServletResponse response,
             String domain,
             JwtDTO jwtDto,
-            Integer refreshExpiration
+            Long refreshExpiration
     ) throws IOException {
-//        CookieUtil.addCookie(
-//                response,
-//                domain,
-//                Constants.ACCESS_COOKIE_NAME,
-//                jwtDto.accessToken()
-//        );
+
         CookieUtil.addSecureCookie(
                 response,
                 domain,
@@ -61,7 +56,7 @@ public class AuthenticationResponse {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(errorCode.getStatus().value());
 
-        Map<String, Object> body= new HashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("success", false);
         body.put("message", "요청이 실패했습니다.");
         body.put("data", null);
