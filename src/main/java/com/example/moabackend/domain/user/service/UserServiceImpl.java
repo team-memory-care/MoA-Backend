@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
         validatePendingRole(user);
 
         String codeToIssue = generateUniqueParentCode();
-        user.completeRoleSelection(ERole.PARENT, codeToIssue, null);
+        user.completeRoleSelection(ERole.PARENT, codeToIssue);
 
         return ParentUserResponseDto.from(user);
     }
@@ -107,12 +107,20 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode) {
         User user = getUserOrThrow(userId);
-        validatePendingRole(user);
+
+        if (user.getRole() != ERole.PENDING && user.getRole() != ERole.CHILD) {
+            throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
+        }
 
         User parentUser = userRepository.findByParentCode(parentCode)
                 .orElseThrow(() -> new CustomException(UserErrorCode.INVALID_PARENT_CODE));
 
-        user.completeRoleSelection(ERole.CHILD, null, parentUser);
+        if (user.getId().equals(parentUser.getId())) {
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+
+        user.addParent(parentUser);
+        user.completeRoleSelection(ERole.CHILD, null);
 
         return ChildUserResponseDto.from(user);
     }

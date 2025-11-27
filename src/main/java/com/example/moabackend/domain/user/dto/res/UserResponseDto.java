@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
 public record UserResponseDto(
         @Schema(description = "사용자 고유 ID", example = "1")
@@ -36,11 +38,14 @@ public record UserResponseDto(
         String parentCode,
 
         @Schema(description = "연결된 부모 사용자의 ID (자녀 사용자일 경우)", example = "20")
-        Long parentUserId
+        List<Long> parentUserIds
 ) {
 
     public static UserResponseDto from(User user) {
-        Long parentId = user.getParent() != null ? user.getParent().getId() : null;
+        List<Long> parentIds = (user.getParents() == null) ?
+                Collections.emptyList() : user.getParents().stream()
+                .map(User::getId)
+                .toList();
         return new UserResponseDto(
                 user.getId(),
                 user.getName(),
@@ -50,7 +55,7 @@ public record UserResponseDto(
                 user.getGender(),
                 user.getStatus(),
                 user.getParentCode(),
-                parentId
+                parentIds
         );
     }
 }
