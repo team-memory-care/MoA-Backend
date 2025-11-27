@@ -145,8 +145,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(LogoutRequestDto requestDto) {
-        String accessToken = requestDto.accessToken();
+    public void logout(String accessToken, LogoutRequestDto requestDto) {
         String refreshToken = requestDto.refreshToken();
 
         Long tokenUserId = jwtUtil.validateRefreshToken(refreshToken);

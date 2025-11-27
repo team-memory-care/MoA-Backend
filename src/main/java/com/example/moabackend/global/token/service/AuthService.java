@@ -35,7 +35,7 @@ public interface AuthService {
 
     ReissueTokenResponseDto reissueToken(ReissueTokenRequestDto requestDto);
 
-    void logout(LogoutRequestDto requestDto);
+    void logout(String accessToken, LogoutRequestDto requestDto);
 
     void withdraw(Long userId);
 }
