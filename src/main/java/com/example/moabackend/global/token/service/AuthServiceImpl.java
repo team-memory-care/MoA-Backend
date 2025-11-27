@@ -10,7 +10,6 @@ import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.security.service.RefreshTokenService;
 import com.example.moabackend.global.security.utils.JwtUtil;
-import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -145,18 +144,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(String accessToken, LogoutRequestDto requestDto) {
-        String refreshToken = requestDto.refreshToken();
-
-        Long tokenUserId = jwtUtil.validateRefreshToken(refreshToken);
-
+    public void logout(String accessToken, Long userId) {
         String jti = jwtUtil.getJti(accessToken);
         long expire = jwtUtil.getAccessTokenRemainingMillis(accessToken);
         if (expire > 0) {
             accessTokenDenyService.deny(jti, Duration.ofSeconds(expire));
         }
 
-        refreshTokenService.deleteRefreshToken(tokenUserId);
+        refreshTokenService.deleteRefreshToken(userId);
     }
 
     @Override

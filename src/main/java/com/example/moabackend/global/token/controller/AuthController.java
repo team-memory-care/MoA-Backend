@@ -2,10 +2,10 @@ package com.example.moabackend.global.token.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
 import com.example.moabackend.global.BaseResponse;
+import com.example.moabackend.global.annotation.UserId;
 import com.example.moabackend.global.code.GlobalSuccessCode;
 import com.example.moabackend.global.security.dto.JwtDTO;
 import com.example.moabackend.global.security.utils.JwtUtil;
-import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 import com.example.moabackend.global.token.service.AuthService;
@@ -52,10 +52,10 @@ public class AuthController {
     @PostMapping("/logout")
     public BaseResponse<Void> logout(
             HttpServletRequest request,
-            @RequestBody LogoutRequestDto requestDto) {
+            @UserId Long userId) {
         String accessToken = jwtUtil.getAccessToken(request);
 
-        authService.logout(accessToken, requestDto);
+        authService.logout(accessToken, userId);
         return BaseResponse.success(UserSuccessCode.LOGOUT_SUCCESS, null);
     }
 }
