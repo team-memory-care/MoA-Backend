@@ -11,11 +11,13 @@ import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -72,8 +74,7 @@ public class JwtUtil implements InitializingBean {
         return JwtDTO.of(
                 generateToken(id, role, accessExpiration),
                 generateToken(id, role, refreshExpiration),
-                role
-        );
+                role);
     }
 
     public Long validateRefreshToken(final String refreshToken) {
@@ -118,5 +119,13 @@ public class JwtUtil implements InitializingBean {
         long now = System.currentTimeMillis();
 
         return expiration.getTime() - now; // 남은 밀리초 반환
+    }
+
+    public String getAccessToken(HttpServletRequest request) {
+        String auth = request.getHeader("Authorization");
+        if (StringUtils.hasText(auth) && auth.startsWith("Bearer ")) {
+            return auth.substring(7);
+        }
+        return null;
     }
 }

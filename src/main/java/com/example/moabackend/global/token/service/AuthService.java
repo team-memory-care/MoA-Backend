@@ -2,7 +2,6 @@ package com.example.moabackend.global.token.service;
 
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.global.security.dto.JwtDTO;
-import com.example.moabackend.global.token.dto.req.LogoutRequestDto;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 
@@ -35,7 +34,7 @@ public interface AuthService {
 
     ReissueTokenResponseDto reissueToken(ReissueTokenRequestDto requestDto);
 
-    void logout(LogoutRequestDto requestDto);
+    void logout(String accessToken, Long userId);
 
     void withdraw(Long userId);
 }
