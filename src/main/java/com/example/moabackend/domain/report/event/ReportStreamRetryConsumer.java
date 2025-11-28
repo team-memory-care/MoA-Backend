@@ -21,7 +21,6 @@ import static com.example.moabackend.global.constant.RedisKey.*;
 @Component
 @RequiredArgsConstructor
 public class ReportStreamRetryConsumer {
-
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
     private final ReportFacade reportFacade;
@@ -36,9 +35,7 @@ public class ReportStreamRetryConsumer {
                         10
                 );
 
-        if (pending.isEmpty()) {
-            return;
-        }
+        if (pending.isEmpty()) return;
 
         for (PendingMessage pm : pending) {
             try {
@@ -49,9 +46,7 @@ public class ReportStreamRetryConsumer {
                                 StreamOffset.create(REPORT_STREAM_KEY, ReadOffset.from(pm.getId()))
                         );
 
-                if (records == null || records.isEmpty()) {
-                    continue;
-                }
+                if (records == null || records.isEmpty()) continue;
 
                 MapRecord<String, Object, Object> msg = records.get(0);
 
@@ -60,7 +55,6 @@ public class ReportStreamRetryConsumer {
 
                 ReportMessagePayload payload =
                         objectMapper.readValue(payloadJson, ReportMessagePayload.class);
-
                 try {
                     reportFacade.processReport(payload);
 
@@ -68,45 +62,39 @@ public class ReportStreamRetryConsumer {
                             .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
 
                     log.info("Retry success: {}", msg.getId());
-                } catch (Exception ex) {
-                    if (ex instanceof OpenAiRateLimitException) {
-                        log.warn("429 Received on retry. Backoff and retry later...");
-                        Thread.sleep(2000);
-                        continue;
-                    }
+                } catch (OpenAiRateLimitException rateEx) {
+                    long backoff = (long) Math.pow(2, retryCount) * 1000;
+                    backoff = Math.min(backoff, 30000);
 
+                    log.warn("RateLimit 429. backoff {}ms (retry={})", backoff, retryCount);
+
+                    Thread.sleep(backoff);
+                } catch (Exception ex) {
                     retryCount++;
-                    log.warn("Retry failed: {} (count={})", msg.getId(), retryCount);
 
                     if (retryCount >= 3) {
                         moveToDLQ(msg, retryCount);
-
                         redisTemplate.opsForStream()
                                 .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
-
                     } else {
-                        redisTemplate.opsForStream().add(
-                                StreamRecords.newRecord()
-                                        .ofMap(Map.of(
-                                                REPORT_MESSAGE_MAP_KEY, payloadJson,
-                                                REPORT_RETRY_COUNT, String.valueOf(retryCount)
-                                        ))
-                                        .withStreamKey(REPORT_STREAM_KEY)
+                        redisTemplate.opsForHash().put(
+                                STREAM_ENTRY_KEY(msg),
+                                REPORT_RETRY_COUNT,
+                                retryCount
                         );
-
-                        redisTemplate.opsForStream()
-                                .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
                     }
                 }
-
-            } catch (Exception e) {
-                log.error("Unexpected retry error", e);
+            } catch (Exception ex) {
+                log.error("Unexpected error during retry", ex);
             }
         }
     }
 
-    private void moveToDLQ(MapRecord<String, Object, Object> msg, int retryCount) {
+    private String STREAM_ENTRY_KEY(MapRecord<String, Object, Object> msg) {
+        return REPORT_STREAM_KEY + "-" + msg.getId();
+    }
 
+    private void moveToDLQ(MapRecord<String, Object, Object> msg, int retryCount) {
         redisTemplate.opsForStream().add(
                 StreamRecords.newRecord()
                         .ofMap(Map.of(
