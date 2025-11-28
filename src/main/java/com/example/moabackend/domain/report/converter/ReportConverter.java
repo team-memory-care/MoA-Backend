@@ -44,6 +44,9 @@ public class ReportConverter {
     }
 
     private DailyAdviceListDto toDailyAdviceListDto(List<Advice> advice) {
+        if (advice == null || advice.isEmpty()) {
+            return new DailyAdviceListDto(List.of());
+        }
         return new DailyAdviceListDto(advice.stream().map(Advice::getContent).toList());
     }
 
