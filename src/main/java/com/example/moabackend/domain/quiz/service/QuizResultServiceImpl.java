@@ -11,7 +11,8 @@ import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
-import com.example.moabackend.domain.report.event.CreateReportEvent;
+import com.example.moabackend.domain.report.entity.type.EReportType;
+import com.example.moabackend.domain.report.event.ReportEventProducer;
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
@@ -37,6 +38,7 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ReportEventProducer reportEventProducer;
 
     @Override
     @Transactional
@@ -84,7 +86,7 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         // 퀴즈 저장 후 모든 퀴즈 완료 여부 확인
         if (hasCompletedAllQuiz(userId, LocalDate.now())) {
-            eventPublisher.publishEvent(new CreateReportEvent(userId));
+            reportEventProducer.publishReportEvent(userId, EReportType.DAILY.getValue());
         }
     }
 

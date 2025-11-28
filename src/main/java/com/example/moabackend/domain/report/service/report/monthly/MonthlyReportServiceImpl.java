@@ -43,8 +43,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
 
     @Override
     @Transactional
-    public void generateMonthlyReport(User user) {
-        LocalDate today = LocalDate.now();
+    public void generateMonthlyReport(User user, LocalDate today) {
         LocalDate startOfMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate endOfMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
 

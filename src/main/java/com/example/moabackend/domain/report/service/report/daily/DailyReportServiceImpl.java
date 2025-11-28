@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -51,10 +50,8 @@ public class DailyReportServiceImpl implements DailyReportService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void generateDailyReport(User user) {
-        LocalDate today = LocalDate.now();
-
+    @Transactional
+    public void generateDailyReport(User user, LocalDate today) {
         if (reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, today).isPresent()) {
             return;
         }

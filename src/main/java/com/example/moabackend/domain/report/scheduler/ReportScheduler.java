@@ -1,5 +1,7 @@
 package com.example.moabackend.domain.report.scheduler;
 
+import com.example.moabackend.domain.report.entity.type.EReportType;
+import com.example.moabackend.domain.report.event.ReportEventProducer;
 import com.example.moabackend.domain.report.service.report.ReportFacade;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
@@ -16,6 +18,7 @@ import java.util.List;
 public class ReportScheduler {
     private final UserRepository userRepository;
     private final ReportFacade reportFacade;
+    private final ReportEventProducer reportEventProducer;
 
     // 매주 월요일 0시 실행
     @Scheduled(cron = "0 0 0 * * MON")
@@ -24,7 +27,7 @@ public class ReportScheduler {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             try {
-                reportFacade.generateWeeklyReport(user);
+                reportEventProducer.publishReportEvent(user.getId(), EReportType.WEEKLY.getValue());
             } catch (Exception e) {
                 log.error("Failed to generate weekly report for user: {}", user.getId(), e);
             }
@@ -39,7 +42,7 @@ public class ReportScheduler {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             try {
-                reportFacade.generateMonthlyReport(user);
+                reportEventProducer.publishReportEvent(user.getId(), EReportType.MONTHLY.getValue());
             } catch (Exception e) {
                 log.error("Failed to generate monthly report for user: {}", user.getId(), e);
             }

@@ -6,7 +6,7 @@ import com.example.moabackend.domain.user.entity.User;
 import java.time.LocalDate;
 
 public interface WeeklyReportService {
-    void generateWeeklyReport(User user);
+    void generateWeeklyReport(User user, LocalDate today);
 
     WeeklyReportResponseDto getWeeklyReport(Long userId, int year, int month, int week);
 }

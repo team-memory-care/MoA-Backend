@@ -45,8 +45,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
 
     @Override
     @Transactional
-    public void generateWeeklyReport(User user) {
-        LocalDate today = LocalDate.now();
+    public void generateWeeklyReport(User user, LocalDate today) {
         LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
         LocalDate endOfWeek = startOfWeek.plusDays(6);
 
