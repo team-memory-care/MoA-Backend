@@ -19,15 +19,20 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
     Optional<QuizResult> findByUserIdAndDateAndTypeLocked(
             @Param("userId") Long userId,
             @Param("date") LocalDate date,
-            @Param("quizType") EQuizType quizType
-    );
+            @Param("quizType") EQuizType quizType);
 
     // 완료 퀴즈 조회
     @Query("""
                 SELECT DISTINCT q.type
                 FROM QuizResult q
                 WHERE q.user.id = :userId
-                AND q.date = :date 
+                AND q.date = :date
             """)
-    List<EQuizType> getCompletedQuizTypes(@Param("userId") Long userId, @Param("date") LocalDate date);
+    List<EQuizType> getCompletedQuizTypes(Long userId, LocalDate date);
+
+    Optional<QuizResult> findByUserIdAndDateAndType(Long userId, LocalDate date, EQuizType quizType);
+
+    List<QuizResult> findAllByUserIdAndDate(Long userId, LocalDate date);
+
+    List<QuizResult> findAllByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
 }

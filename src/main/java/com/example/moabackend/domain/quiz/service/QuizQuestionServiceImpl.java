@@ -33,7 +33,7 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
         List<Long> ids = quizQuestionRepository.findTodayQuizIds();
         List<QuizQuestion> entities = quizQuestionRepository.findAllById(ids);
 
-        if (entities.size() < EQuizType.values().length * COUNT_PER_TYPE_TODAY) {
+        if (entities.size() < (EQuizType.values().length - 1) * COUNT_PER_TYPE_TODAY) {
             throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
         }
 
