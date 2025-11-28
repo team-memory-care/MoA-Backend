@@ -202,7 +202,6 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
 
     private WeeklyReportResponseDto parseAiWeeklyReport(String aiContent) {
         try {
-            objectMapper.readTree(aiContent);
             return objectMapper.readValue(aiContent, WeeklyReportResponseDto.class);
         } catch (Exception e) {
             log.error(e.getMessage());

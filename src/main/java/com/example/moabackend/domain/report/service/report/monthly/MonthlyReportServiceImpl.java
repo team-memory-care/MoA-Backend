@@ -225,7 +225,6 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
 
     private MonthlyReportResponseDto parseAiResponse(String aiContent) {
         try {
-            objectMapper.readTree(aiContent);
             return objectMapper.readValue(aiContent, MonthlyReportResponseDto.class);
         } catch (JsonProcessingException e) {
             throw new CustomException(GlobalErrorCode.BAD_JSON);

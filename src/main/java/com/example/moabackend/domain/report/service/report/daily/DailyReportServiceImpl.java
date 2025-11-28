@@ -92,7 +92,7 @@ public class DailyReportServiceImpl implements DailyReportService {
         try {
             resultsJson = objectMapper.writeValueAsString(results);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Weekly scoreResult JSON serialization failed", e);
+            throw new CustomException(GlobalErrorCode.BAD_JSON);
         }
         return DAILY_REPORT_PROMPT.replace("{{quizResults}}", resultsJson);
     }
@@ -100,7 +100,6 @@ public class DailyReportServiceImpl implements DailyReportService {
     @Override
     public List<Advice> parseAiDailyReport(String aiContent, Report report) {
         try {
-            objectMapper.readTree(aiContent);
             DailyAdviceListDto dailyReportResponseDto = objectMapper.readValue(aiContent, DailyAdviceListDto.class);
             return dailyReportResponseDto.advices().stream()
                     .map(a -> Advice.builder()
