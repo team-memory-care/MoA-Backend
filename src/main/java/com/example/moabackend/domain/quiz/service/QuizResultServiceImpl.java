@@ -11,11 +11,14 @@ import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
+import com.example.moabackend.domain.report.event.CreateReportEvent;
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuizResultServiceImpl implements QuizResultService {
@@ -32,7 +36,7 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
-
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -53,8 +57,7 @@ public class QuizResultServiceImpl implements QuizResultService {
                 question.getId(),
                 question.getType(),
                 isCorrect,
-                question.getAnswer()
-        );
+                question.getAnswer());
     }
 
     @Override
@@ -63,7 +66,8 @@ public class QuizResultServiceImpl implements QuizResultService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeLocked(userId, LocalDate.now(), quizSaveRequestDto.type());
+        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeLocked(userId, LocalDate.now(),
+                quizSaveRequestDto.type());
 
         if (quiz.isPresent()) {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());
@@ -74,6 +78,51 @@ public class QuizResultServiceImpl implements QuizResultService {
             } catch (DataIntegrityViolationException e) {
                 throw new CustomException(QuizErrorCode.ALREADY_SUBMITTED);
             }
+        }
+
+        updateAllTypeResult(user, LocalDate.now());
+
+        // 퀴즈 저장 후 모든 퀴즈 완료 여부 확인
+        if (hasCompletedAllQuiz(userId, LocalDate.now())) {
+            eventPublisher.publishEvent(new CreateReportEvent(userId));
+        }
+    }
+
+    @Transactional
+    public void updateAllTypeResult(User user, LocalDate date) {
+        List<QuizResult> results = quizResultRepository
+                .findAllByUserIdAndDate(user.getId(), date);
+
+        Optional<QuizResult> allOpt = results.stream()
+                .filter(r -> r.getType() == EQuizType.ALL)
+                .findFirst();
+
+        int totalCorrect = results.stream()
+                .filter(r -> r.getType() != EQuizType.ALL)
+                .mapToInt(QuizResult::getCorrectNumber)
+                .sum();
+
+        int totalTotal = results.stream()
+                .filter(r -> r.getType() != EQuizType.ALL)
+                .mapToInt(QuizResult::getTotalNumber)
+                .sum();
+
+        QuizResult allResult;
+
+        if (allOpt.isPresent()) {
+            allResult = allOpt.get();
+            allResult.updateCorrectNumber(totalCorrect);
+            allResult.updateTotalNumber(totalTotal);
+        } else {
+            quizResultRepository.save(
+                    QuizResult.builder()
+                            .user(user)
+                            .type(EQuizType.ALL)
+                            .correctNumber(totalCorrect)
+                            .totalNumber(totalTotal)
+                            .date(date)
+                            .build()
+            );
         }
     }
 
