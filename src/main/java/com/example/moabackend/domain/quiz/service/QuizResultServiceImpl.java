@@ -37,7 +37,6 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
-    private final ApplicationEventPublisher eventPublisher;
     private final ReportEventProducer reportEventProducer;
 
     @Override
@@ -86,7 +85,7 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         // 퀴즈 저장 후 모든 퀴즈 완료 여부 확인
         if (hasCompletedAllQuiz(userId, LocalDate.now())) {
-            reportEventProducer.publishReportEvent(userId, EReportType.DAILY.getValue());
+            reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
         }
     }
 

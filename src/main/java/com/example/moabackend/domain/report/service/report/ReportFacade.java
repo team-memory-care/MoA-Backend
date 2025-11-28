@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report;
 
+import com.example.moabackend.domain.report.code.error.ReportErrorCode;
 import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
 import com.example.moabackend.domain.report.dto.res.DailyReportResponseDto;
 import com.example.moabackend.domain.report.dto.res.MonthlyReportResponseDto;
@@ -53,9 +54,10 @@ public class ReportFacade {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         switch (msg.reportType()) {
-            case "DAILY" -> generateDailyReport(user, msg.date());
-            case "WEEKLY" -> generateWeeklyReport(user, msg.date());
-            case "MONTHLY" -> generateMonthlyReport(user, msg.date());
+            case DAILY -> generateDailyReport(user, msg.date());
+            case WEEKLY -> generateWeeklyReport(user, msg.date());
+            case MONTHLY -> generateMonthlyReport(user, msg.date());
+            default -> throw new CustomException(ReportErrorCode.REPORT_TYPE_NOT_FOUNT);
         }
     }
 }

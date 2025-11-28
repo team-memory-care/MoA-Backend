@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.report.event;
 
 import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
+import com.example.moabackend.domain.report.entity.type.EReportType;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +23,7 @@ public class ReportEventProducer {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public void publishReportEvent(Long userId, String type) {
+    public void publishReportEvent(Long userId, EReportType type) {
         try {
             String json = objectMapper.writeValueAsString(
                     new ReportMessagePayload(userId, LocalDate.now(), type)

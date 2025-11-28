@@ -49,7 +49,7 @@ public class DailyReportServiceImpl implements DailyReportService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, date)
                 .orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
-        return reportConverter.toDailyReportResponseDto(report);
+        return reportConverter.toDailyAdviceListDto(report);
     }
 
     @Override

@@ -27,7 +27,7 @@ public class ReportScheduler {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             try {
-                reportEventProducer.publishReportEvent(user.getId(), EReportType.WEEKLY.getValue());
+                reportEventProducer.publishReportEvent(user.getId(), EReportType.WEEKLY);
             } catch (Exception e) {
                 log.error("Failed to generate weekly report for user: {}", user.getId(), e);
             }
@@ -42,7 +42,7 @@ public class ReportScheduler {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             try {
-                reportEventProducer.publishReportEvent(user.getId(), EReportType.MONTHLY.getValue());
+                reportEventProducer.publishReportEvent(user.getId(), EReportType.MONTHLY);
             } catch (Exception e) {
                 log.error("Failed to generate monthly report for user: {}", user.getId(), e);
             }
