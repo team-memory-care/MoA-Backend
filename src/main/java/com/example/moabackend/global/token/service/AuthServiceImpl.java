@@ -48,7 +48,6 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateSignUpAuthCode(String phoneNumber) {
-
         String code;
         // 1. 4자리 인증 코드 생성
         if ("01035477120".equals(phoneNumber)) {
@@ -76,7 +75,6 @@ public class AuthServiceImpl implements AuthService {
         if (!userRepository.existsByPhoneNumber((phoneNumber))) {
             throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
         }
-
         String code;
 
         // 1. 4자리 인증 코드 생성
