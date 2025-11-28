@@ -14,11 +14,11 @@ import java.util.List;
 @Component
 public class ReportConverter {
     // Report -> DailyReportResponseDto
-    public DailyReportResponseDto toDailyReportResponseDto(Report report) {
+    public DailyReportResponseDto toDailyAdviceListDto(Report report) {
         return new DailyReportResponseDto(
                 report.getDate(),
                 toReportQuizScoreDto(report.getReportQuizScores()),
-                toDailyReportResponseDto(report.getAdvices())
+                toDailyAdviceListDto(report.getAdvices())
         );
     }
 
@@ -43,7 +43,7 @@ public class ReportConverter {
                 .toList();
     }
 
-    private DailyAdviceListDto toDailyReportResponseDto(List<Advice> advice) {
+    private DailyAdviceListDto toDailyAdviceListDto(List<Advice> advice) {
         return new DailyAdviceListDto(advice.stream().map(Advice::getContent).toList());
     }
 
