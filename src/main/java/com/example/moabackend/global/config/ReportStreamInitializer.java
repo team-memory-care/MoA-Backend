@@ -3,13 +3,13 @@ package com.example.moabackend.global.config;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.RedisStreamCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static com.example.moabackend.global.constant.RedisKey.REPORT_GROUP;
-import static com.example.moabackend.global.constant.RedisKey.REPORT_STREAM_KEY;
+import static com.example.moabackend.global.constant.RedisKey.*;
 
 @Slf4j
 @Component
@@ -24,7 +24,8 @@ public class ReportStreamInitializer {
             if (!Boolean.TRUE.equals(redisTemplate.hasKey(REPORT_STREAM_KEY))) {
                 redisTemplate.opsForStream().add(
                         REPORT_STREAM_KEY,
-                        Map.of("init", "1")
+                        Map.of("init", "1"),
+                        RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
                 );
                 log.info("Stream 'report-stream' created");
             }

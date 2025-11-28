@@ -10,4 +10,5 @@ public class RedisKey {
     public static final String REPORT_MESSAGE_MAP_KEY = "report-payload";
     public static final String REPORT_RETRY_COUNT = "report-retry-count";
     public static final String REPORT_DLQ_STREAM_KEY = "report-dlq-stream";
+    public static final long REDIS_STREAM_MAX_LEN = 1500;
 }

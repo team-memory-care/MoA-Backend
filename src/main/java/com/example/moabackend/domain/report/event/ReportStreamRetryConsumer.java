@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.RedisStreamCommands;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -102,7 +103,8 @@ public class ReportStreamRetryConsumer {
                                 msg.getValue().get(REPORT_MESSAGE_MAP_KEY),
                                 REPORT_RETRY_COUNT, retryCount
                         ))
-                        .withStreamKey(REPORT_DLQ_STREAM_KEY)
+                        .withStreamKey(REPORT_DLQ_STREAM_KEY),
+                RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
         );
 
         log.error("Moved to DLQ: {}", msg.getId());

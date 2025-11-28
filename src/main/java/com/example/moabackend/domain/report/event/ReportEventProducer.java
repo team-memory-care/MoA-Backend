@@ -6,14 +6,14 @@ import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.RedisStreamCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Map;
 
-import static com.example.moabackend.global.constant.RedisKey.REPORT_MESSAGE_MAP_KEY;
-import static com.example.moabackend.global.constant.RedisKey.REPORT_STREAM_KEY;
+import static com.example.moabackend.global.constant.RedisKey.*;
 
 @Slf4j
 @Service
@@ -30,7 +30,8 @@ public class ReportEventProducer {
 
             redisTemplate.opsForStream().add(
                     REPORT_STREAM_KEY,
-                    Map.of(REPORT_MESSAGE_MAP_KEY, json)
+                    Map.of(REPORT_MESSAGE_MAP_KEY, json),
+                    RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
             );
         } catch (Exception e) {
             log.error(e.getMessage());
