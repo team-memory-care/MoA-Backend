@@ -14,6 +14,7 @@ import com.example.moabackend.domain.report.service.ai.OpenAiService;
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
+import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.exception.OpenAiRateLimitException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -87,7 +88,13 @@ public class DailyReportServiceImpl implements DailyReportService {
 
     @Override
     public String createDailyPrompt(List<QuizResult> results) {
-        return DAILY_REPORT_PROMPT.replace("{{quizResults}}", results.toString());
+        String resultsJson;
+        try {
+            resultsJson = objectMapper.writeValueAsString(results);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Weekly scoreResult JSON serialization failed", e);
+        }
+        return DAILY_REPORT_PROMPT.replace("{{quizResults}}", resultsJson);
     }
 
     @Override
@@ -103,7 +110,9 @@ public class DailyReportServiceImpl implements DailyReportService {
                     .toList();
         } catch (JsonProcessingException e) {
             log.warn("GPT 응답이 JSON 형식이 아닙니다. {}", e.getMessage());
-            return new ArrayList<>();
+            throw new CustomException(GlobalErrorCode.BAD_JSON);
         }
     }
+
+
 }
