@@ -15,12 +15,15 @@ import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.exception.OpenAiRateLimitException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -70,7 +73,12 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
         int correctRate = calcCorrectRate(thisMonth);
 
         String prompt = createMonthlyPrompt(completeRate, correctRate, scoreResult);
-        String aiContent = openAiService.callOpenAi(prompt).block();
+        String aiContent = openAiService.callOpenAi(prompt)
+                .retryWhen(Retry.backoff(5, Duration.ofSeconds(1))
+                        .filter(ex -> ex instanceof OpenAiRateLimitException)
+                        .maxBackoff(Duration.ofSeconds(30))
+                )
+                .block();
 
         MonthlyReportResponseDto aiResponse = parseAiResponse(aiContent);
 

@@ -1,21 +1,22 @@
 package com.example.moabackend.domain.report.service.ai;
 
-import java.util.List;
-import java.util.Map;
-
+import com.example.moabackend.domain.report.code.error.OpenAiErrorCode;
+import com.example.moabackend.domain.report.code.error.ReportErrorCode;
+import com.example.moabackend.global.code.ErrorCode;
+import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.exception.OpenAiRateLimitException;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.example.moabackend.domain.report.code.error.ReportErrorCode;
-import com.example.moabackend.global.code.ErrorCode;
-import com.example.moabackend.global.exception.CustomException;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -37,8 +38,7 @@ public class OpenAiServiceImpl implements OpenAiService {
                         clientResponse -> handleError(clientResponse, ReportErrorCode.OPEN_AI_UNAUTHORIZED,
                                 "OpenAI Unauthorized Error"))
                 .onStatus(status -> status.value() == 429,
-                        clientResponse -> handleError(clientResponse, ReportErrorCode.OPEN_AI_RATE_LIMIT,
-                                "OpenAI Rate Limit Error"))
+                        this::handleTooManyRequest)
                 .onStatus(HttpStatusCode::is5xxServerError,
                         clientResponse -> handleError(clientResponse, ReportErrorCode.OPEN_AI_INTERNAL_ERROR,
                                 "OpenAI Internal Error"))
@@ -52,5 +52,20 @@ public class OpenAiServiceImpl implements OpenAiService {
                     log.error("{} : {}", logPrefix, errorBody);
                     return Mono.error(new CustomException(errorCode));
                 });
+    }
+
+    private Mono<? extends Throwable> handleTooManyRequest(ClientResponse response) {
+        return response.headers().asHttpHeaders().containsKey("Retry-After")
+                ? retryAfter(response)
+                : Mono.error(new OpenAiRateLimitException(OpenAiErrorCode.OPEN_AI_TOO_MANY_REQUESTS));
+    }
+
+    private Mono<? extends Throwable> retryAfter(ClientResponse response) {
+        String retryAfter = response.headers().asHttpHeaders().getFirst("Retry-After");
+        long delay = Long.parseLong(retryAfter) * 1000L;
+
+        return Mono.delay(Duration.ofMillis(delay))
+                .flatMapMany(t -> Mono.error(new OpenAiRateLimitException(OpenAiErrorCode.OPEN_AI_RETRY_AFTER_DELAY)))
+                .then(Mono.empty());
     }
 }

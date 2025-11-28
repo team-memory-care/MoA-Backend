@@ -2,6 +2,7 @@ package com.example.moabackend.domain.report.event;
 
 import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
 import com.example.moabackend.domain.report.service.report.ReportFacade;
+import com.example.moabackend.global.exception.OpenAiRateLimitException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,6 @@ public class ReportStreamRetryConsumer {
 
     @Scheduled(fixedDelay = 5000)
     public void retryPending() {
-
         PendingMessages pending =
                 redisTemplate.opsForStream().pending(
                         REPORT_STREAM_KEY,
@@ -68,29 +68,35 @@ public class ReportStreamRetryConsumer {
                             .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
 
                     log.info("Retry success: {}", msg.getId());
-                    continue;
-
                 } catch (Exception ex) {
+                    if (ex instanceof OpenAiRateLimitException) {
+                        log.warn("429 Received on retry. Backoff and retry later...");
+                        Thread.sleep(2000);
+                        continue;
+                    }
+
+                    retryCount++;
                     log.warn("Retry failed: {} (count={})", msg.getId(), retryCount);
-                }
 
-                retryCount++;
+                    if (retryCount >= 3) {
+                        moveToDLQ(msg, retryCount);
 
-                if (retryCount >= 3) {
-                    moveToDLQ(msg, retryCount);
-                    redisTemplate.opsForStream()
-                            .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
-                } else {
-                    redisTemplate.opsForStream().add(
-                            StreamRecords.newRecord()
-                                    .ofMap(Map.of(
-                                            REPORT_MESSAGE_MAP_KEY, payloadJson,
-                                            REPORT_RETRY_COUNT, String.valueOf(retryCount)
-                                    ))
-                                    .withStreamKey(REPORT_STREAM_KEY)
-                    );
-                    redisTemplate.opsForStream()
-                            .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
+                        redisTemplate.opsForStream()
+                                .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
+
+                    } else {
+                        redisTemplate.opsForStream().add(
+                                StreamRecords.newRecord()
+                                        .ofMap(Map.of(
+                                                REPORT_MESSAGE_MAP_KEY, payloadJson,
+                                                REPORT_RETRY_COUNT, String.valueOf(retryCount)
+                                        ))
+                                        .withStreamKey(REPORT_STREAM_KEY)
+                        );
+
+                        redisTemplate.opsForStream()
+                                .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
+                    }
                 }
 
             } catch (Exception e) {

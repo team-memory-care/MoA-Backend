@@ -15,13 +15,16 @@ import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.exception.OpenAiRateLimitException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +62,12 @@ public class DailyReportServiceImpl implements DailyReportService {
         List<QuizResult> results = quizResultRepository.findAllByUserIdAndDate(user.getId(), today);
 
         String prompt = createDailyPrompt(results);
-        String aiContent = openAiService.callOpenAi(prompt).block();
+        String aiContent = openAiService.callOpenAi(prompt)
+                .retryWhen(Retry.backoff(5, Duration.ofSeconds(1))
+                        .filter(ex -> ex instanceof OpenAiRateLimitException)
+                        .maxBackoff(Duration.ofSeconds(30))
+                )
+                .block();
 
         Report report = Report.builder()
                 .user(user)
