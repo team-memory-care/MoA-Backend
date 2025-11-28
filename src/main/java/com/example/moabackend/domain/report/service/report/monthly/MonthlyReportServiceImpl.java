@@ -50,7 +50,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
         LocalDate startOfMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate endOfMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
 
-        if (reportRepository.findByUserAndTypeAndDate(user, EReportType.MONTHLY, today).isPresent()) {
+        if (reportRepository.findByUserAndTypeAndDate(user, EReportType.MONTHLY, startOfMonth).isPresent()) {
             return;
         }
 

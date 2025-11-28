@@ -52,7 +52,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
         LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
         LocalDate endOfWeek = startOfWeek.plusDays(6);
 
-        if (reportRepository.findByUserAndTypeAndDate(user, EReportType.WEEKLY, today).isPresent()) {
+        if (reportRepository.findByUserAndTypeAndDate(user, EReportType.WEEKLY, startOfWeek).isPresent()) {
             return;
         }
 
@@ -110,7 +110,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         // 이번주 기간 계산
-        LocalDate startOfWeek = LocalDate.of(year, month, week)
+        LocalDate startOfWeek = LocalDate.of(year, month, 1)
                 .with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
                 .plusWeeks(week - 1);
         LocalDate endOfWeek = startOfWeek.plusDays(6);
@@ -191,7 +191,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
         try {
             scoreResultJson = objectMapper.writeValueAsString(scoreResult);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Monthly scoreResult JSON serialization failed", e);
+            throw new RuntimeException("Weekly scoreResult JSON serialization failed", e);
         }
 
         return WEEKLY_REPORT_PROMPT
