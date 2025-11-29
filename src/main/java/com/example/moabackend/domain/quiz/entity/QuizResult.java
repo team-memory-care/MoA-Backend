@@ -48,10 +48,10 @@ public class QuizResult {
     }
 
     public void updateCorrectNumber(int newCorrectCount) {
-        this.correctNumber += newCorrectCount;
+        this.correctNumber = newCorrectCount;
     }
 
     public void updateTotalNumber(int newTotalCount) {
-        this.totalNumber += newTotalCount;
+        this.totalNumber = newTotalCount;
     }
 }
