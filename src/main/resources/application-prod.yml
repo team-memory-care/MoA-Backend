@@ -65,6 +65,10 @@ coolsms:
     secret: ${COOLSMS_API_SECRET}
     sender-number: ${COOLSMS_API_SENDER_NUMBER}
 
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+
 logging:
   level:
     web: debug

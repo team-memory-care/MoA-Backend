@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,6 +50,9 @@ public record LinguisticQuizQuestionDto(
                 options = Collections.emptyList();
             }
 
+            List<String> shuffledOptions = new ArrayList<>(options);
+            Collections.shuffle(shuffledOptions);
+
             String rawImageKey = jsonNode.path("imageUrl").asText();
             String fullImageUrl = S3UrlUtils.convertToHttpUrl(rawImageKey);
 
@@ -59,7 +63,7 @@ public record LinguisticQuizQuestionDto(
                     entity.getQuestionContent(),
                     entity.getAnswer(),
                     fullImageUrl,
-                    options);
+                    shuffledOptions);
 
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);

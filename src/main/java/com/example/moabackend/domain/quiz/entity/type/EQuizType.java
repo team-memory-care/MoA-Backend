@@ -10,7 +10,8 @@ public enum EQuizType {
     MEMORY("기억력"),
     LINGUISTIC("언어능력"),
     ATTENTION("주의력"),
-    SPACETIME("시공간");
+    SPACETIME("시공간"),
+    ALL("전체");
 
     private final String value;
 }
