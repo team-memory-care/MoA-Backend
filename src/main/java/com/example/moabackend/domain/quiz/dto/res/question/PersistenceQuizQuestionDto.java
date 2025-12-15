@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,13 +44,17 @@ public record PersistenceQuizQuestionDto(
             if (options == null) {
                 options = Collections.emptyList();
             }
+
+            List<String> shuffledOptions = new ArrayList<>(options);
+            Collections.shuffle(shuffledOptions);
+
             return new PersistenceQuizQuestionDto(
                     entity.getId(),
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    options);
+                    shuffledOptions);
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
