@@ -6,8 +6,11 @@ import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 public record MemoryQuizQuestionDto(
         // 1. 공통 필드
@@ -18,7 +21,7 @@ public record MemoryQuizQuestionDto(
         String answer,
 
         // 2. 유형별 필드
-        String imageUrl,
+        List<String> imageUrls,
         String inputMethod,
         String requiredSequenceType
 
@@ -36,8 +39,10 @@ public record MemoryQuizQuestionDto(
         try {
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
-            String rawImageKey = jsonNode.path("image_url").asText();
-            String fullImageUrl = S3UrlUtils.convertToHttpUrl(rawImageKey);
+            List<String> rawKeys = objectMapper.convertValue(jsonNode.path("imageUrls"), new TypeReference<List<String>>() {
+            });
+
+            List<String> fullImageUrls = (rawKeys == null) ? List.of() : rawKeys.stream().map(S3UrlUtils::convertToHttpUrl).toList();
 
             return new MemoryQuizQuestionDto(
                     entity.getId(),
@@ -45,7 +50,7 @@ public record MemoryQuizQuestionDto(
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    fullImageUrl,
+                    fullImageUrls,
                     jsonNode.path("input_method").asText(),
                     jsonNode.path("required_sequence_type").asText());
         } catch (JsonProcessingException e) {
