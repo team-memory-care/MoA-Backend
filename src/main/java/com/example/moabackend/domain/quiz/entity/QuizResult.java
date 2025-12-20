@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.quiz.entity;
 
+import com.example.moabackend.domain.quiz.entity.type.EQuizCategory;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "date", "type"})
+        @UniqueConstraint(columnNames = {"user_id", "date", "type", "category"})
 })
 public class QuizResult {
     @Id
@@ -36,14 +37,19 @@ public class QuizResult {
     private EQuizType type;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EQuizCategory category;
+
+    @Column(nullable = false)
     private LocalDate date;
 
     @Builder
-    public QuizResult(User user, int totalNumber, int correctNumber, EQuizType type, LocalDate date) {
+    public QuizResult(User user, int totalNumber, int correctNumber, EQuizType type, EQuizCategory category, LocalDate date) {
         this.user = user;
         this.totalNumber = totalNumber;
         this.correctNumber = correctNumber;
         this.type = type;
+        this.category = category;
         this.date = date;
     }
 

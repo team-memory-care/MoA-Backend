@@ -8,6 +8,7 @@ import com.example.moabackend.domain.quiz.dto.res.result.QuizRemainTypeResponseD
 import com.example.moabackend.domain.quiz.dto.res.result.QuizSubmitResponseDto;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
+import com.example.moabackend.domain.quiz.entity.type.EQuizCategory;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
@@ -50,7 +51,7 @@ public class QuizResultServiceImpl implements QuizResultService {
         boolean isCorrect = question.getAnswer().trim().equalsIgnoreCase(requestDto.userAnswer().trim());
         int correctCount = isCorrect ? 1 : 0;
 
-        QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType());
+        QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType(), EQuizCategory.TODAY);
 
         saveQuizResult(userId, saveRequest);
 
@@ -67,8 +68,8 @@ public class QuizResultServiceImpl implements QuizResultService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeLocked(userId, LocalDate.now(),
-                quizSaveRequestDto.type());
+        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeAndCategoryLocked(userId, LocalDate.now(), quizSaveRequestDto.type(),
+                quizSaveRequestDto.category());
 
         if (quiz.isPresent()) {
             quiz.get().updateCorrectNumber(quizSaveRequestDto.correctNumber());
@@ -81,16 +82,15 @@ public class QuizResultServiceImpl implements QuizResultService {
             }
         }
 
-        updateAllTypeResult(user, LocalDate.now());
+        updateAllTypeResultByCategory(user, LocalDate.now(), quizSaveRequestDto.category());
 
-        // 퀴즈 저장 후 모든 퀴즈 완료 여부 확인
-        if (hasCompletedAllQuiz(userId, LocalDate.now())) {
+        if (quizSaveRequestDto.category() == EQuizCategory.TODAY && hasCompletedTodaySet(userId, LocalDate.now())) {
             reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
         }
     }
 
     @Transactional
-    public void updateAllTypeResult(User user, LocalDate date) {
+    public void updateAllTypeResultByCategory(User user, LocalDate date, EQuizCategory category) {
         List<QuizResult> results = quizResultRepository
                 .findAllByUserIdAndDate(user.getId(), date);
 
@@ -119,6 +119,7 @@ public class QuizResultServiceImpl implements QuizResultService {
                     QuizResult.builder()
                             .user(user)
                             .type(EQuizType.ALL)
+                            .category(category)
                             .correctNumber(totalCorrect)
                             .totalNumber(totalTotal)
                             .date(date)
@@ -127,11 +128,19 @@ public class QuizResultServiceImpl implements QuizResultService {
         }
     }
 
+    private boolean hasCompletedTodaySet(Long userId, LocalDate date) {
+        List<EQuizType> completed = quizResultRepository.getCompletedQuizTypesByUserIdAndDateAndCategory(
+                userId, date, EQuizCategory.TODAY);
+        return completed.size() >= 5;
+    }
+
+
     @Override
     @Transactional(readOnly = true)
     public Boolean hasCompletedAllQuiz(Long userId, LocalDate date) {
-        int completedCount = quizResultRepository.getCompletedQuizTypes(userId, date).size();
-        return completedCount == EQuizType.values().length;
+        List<EQuizType> completed = quizResultRepository.getCompletedQuizTypesByUserIdAndDateAndCategory(
+                userId, date, EQuizCategory.TODAY);
+        return completed.size() >= 5;
     }
 
     @Override

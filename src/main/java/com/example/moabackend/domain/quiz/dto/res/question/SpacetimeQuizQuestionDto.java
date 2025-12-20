@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +54,9 @@ public record SpacetimeQuizQuestionDto(
             List<String> processedOptions = rawOptions.stream()
                     .map(S3UrlUtils::convertToHttpUrl)
                     .toList();
+
+            List<String> shuffledOptions = new ArrayList<>(processedOptions);
+            Collections.shuffle(shuffledOptions);
 
             return new SpacetimeQuizQuestionDto(
                     entity.getId(),
