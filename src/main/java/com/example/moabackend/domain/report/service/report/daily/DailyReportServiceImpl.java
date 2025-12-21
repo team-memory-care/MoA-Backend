@@ -2,7 +2,6 @@ package com.example.moabackend.domain.report.service.report.daily;
 
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
-import com.example.moabackend.domain.report.code.error.ReportErrorCode;
 import com.example.moabackend.domain.report.converter.ReportConverter;
 import com.example.moabackend.domain.report.dto.res.DailyAdviceListDto;
 import com.example.moabackend.domain.report.dto.res.DailyReportResponseDto;
@@ -48,9 +47,9 @@ public class DailyReportServiceImpl implements DailyReportService {
     public DailyReportResponseDto getDailyReport(Long userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, date)
-                .orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
-        return reportConverter.toDailyAdviceListDto(report);
+        return reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, date)
+                .map(reportConverter::toDailyAdviceListDto)
+                .orElse(null);
     }
 
     @Override

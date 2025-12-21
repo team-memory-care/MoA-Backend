@@ -3,7 +3,6 @@ package com.example.moabackend.domain.report.service.report.monthly;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
-import com.example.moabackend.domain.report.code.error.ReportErrorCode;
 import com.example.moabackend.domain.report.dto.res.MonthlyReportResponseDto;
 import com.example.moabackend.domain.report.dto.res.MonthlyScoreDto;
 import com.example.moabackend.domain.report.entity.Report;
@@ -103,9 +102,16 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         LocalDate reportDate = LocalDate.of(year, month, 1);
-        Report report = reportRepository.findByUserAndTypeAndDate(
-                user, EReportType.MONTHLY, reportDate
-        ).orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
+//        Report report = reportRepository.findByUserAndTypeAndDate(
+//                user, EReportType.MONTHLY, reportDate
+//        ).orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
+
+        Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.MONTHLY, reportDate)
+                .orElse(null);
+
+        if (report == null) {
+            return null;
+        }
 
         LocalDate startOfMonth = reportDate.with(TemporalAdjusters.firstDayOfMonth());
         LocalDate endOfMonth = reportDate.with(TemporalAdjusters.lastDayOfMonth());
