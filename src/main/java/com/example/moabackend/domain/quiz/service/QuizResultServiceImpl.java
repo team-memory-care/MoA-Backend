@@ -52,6 +52,7 @@ public class QuizResultServiceImpl implements QuizResultService {
         int correctCount = isCorrect ? 1 : 0;
 
         QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType(), EQuizCategory.TODAY);
+
         saveQuizResult(userId, saveRequest);
 
         return new QuizSubmitResponseDto(
