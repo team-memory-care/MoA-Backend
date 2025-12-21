@@ -21,36 +21,35 @@ public class ReportStreamInitializer {
     @PostConstruct
     public void init() {
         try {
-            if (!Boolean.TRUE.equals(redisTemplate.hasKey(REPORT_STREAM_KEY))) {
-                redisTemplate.opsForStream().add(
-                        StreamRecords.newRecord()
-                                .ofMap(Map.of("seed", "init"))
-                                .withStreamKey(REPORT_STREAM_KEY),
-                        RedisStreamCommands.XAddOptions
-                                .maxlen(REDIS_STREAM_MAX_LEN)
-                                .approximateTrimming(true)
-                );
-                log.info("Stream '{}' created with seed record", REPORT_STREAM_KEY);
-            }
-
-            try {
-                redisTemplate.opsForStream().createGroup(
-                        REPORT_STREAM_KEY,
-                        REPORT_GROUP
-                );
-                log.info("Consumer group '{}' created", REPORT_GROUP);
-
-            } catch (Exception e) {
-                String msg = e.getMessage();
-                if (msg != null && msg.contains("BUSYGROUP")) {
-                    log.info("Consumer group '{}' already exists", REPORT_GROUP);
-                } else {
-                    throw e;
-                }
-            }
-
+            ensureStreamExists();
+            createConsumerGroup();
         } catch (Exception e) {
-            log.error("Failed to initialize Redis Stream", e);
+            log.error("CRITICAL: Failed to initialize Redis Stream infrastructure", e);
+        }
+    }
+
+    private void ensureStreamExists() {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(REPORT_STREAM_KEY))) {
+            redisTemplate.opsForStream().add(
+                    StreamRecords.newRecord()
+                            .ofMap(Map.of("seed", "init"))
+                            .withStreamKey(REPORT_STREAM_KEY),
+                    RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
+            );
+            log.info("Stream '{}' created with seed record", REPORT_STREAM_KEY);
+        }
+    }
+
+    private void createConsumerGroup() {
+        try {
+            redisTemplate.opsForStream().createGroup(REPORT_STREAM_KEY, REPORT_GROUP);
+            log.info("Consumer group '{}' created for stream '{}'", REPORT_GROUP, REPORT_STREAM_KEY);
+        } catch (org.springframework.data.redis.RedisSystemException e) {
+            if (e.getCause() instanceof io.lettuce.core.RedisBusyException) {
+                log.info("Consumer group '{}' already exists. Skipping creation.", REPORT_GROUP);
+            } else {
+                throw e;
+            }
         }
     }
 }
