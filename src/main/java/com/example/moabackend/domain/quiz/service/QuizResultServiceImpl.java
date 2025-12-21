@@ -48,11 +48,10 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        boolean isCorrect = question.getAnswer().trim().equalsIgnoreCase(requestDto.userAnswer().trim());
+        boolean isCorrect = isAnswerCorrect(question, requestDto.userAnswer());
         int correctCount = isCorrect ? 1 : 0;
 
         QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType(), EQuizCategory.TODAY);
-
         saveQuizResult(userId, saveRequest);
 
         return new QuizSubmitResponseDto(
@@ -151,5 +150,18 @@ public class QuizResultServiceImpl implements QuizResultService {
                 .filter(type -> !completed.contains(type))
                 .toList();
         return QuizRemainTypeResponseDto.of(remainList);
+    }
+
+    private boolean isAnswerCorrect(QuizQuestion question, String userAnswer) {
+        if (userAnswer == null || userAnswer.isBlank()) {
+            return false;
+        }
+
+        if (question.getType() == EQuizType.MEMORY) {
+            String normalizedDb = question.getAnswer().replaceAll("[\\s,]", "").toLowerCase();
+            String normalizedUser = userAnswer.replaceAll("[\\s,]", "").toLowerCase();
+            return normalizedDb.equals(normalizedUser);
+        }
+        return question.getAnswer().trim().equalsIgnoreCase(userAnswer.trim());
     }
 }

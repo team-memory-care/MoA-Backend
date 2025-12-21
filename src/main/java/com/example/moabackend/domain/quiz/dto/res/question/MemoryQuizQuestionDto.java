@@ -6,8 +6,11 @@ import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.global.exception.CustomException;
 import com.example.moabackend.global.util.S3UrlUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 public record MemoryQuizQuestionDto(
         // 1. 공통 필드
@@ -18,7 +21,7 @@ public record MemoryQuizQuestionDto(
         String answer,
 
         // 2. 유형별 필드
-        String imageUrl,
+        List<String> imageUrls,
         String inputMethod,
         String requiredSequenceType
 
@@ -32,12 +35,47 @@ public record MemoryQuizQuestionDto(
     }
 
     // [2] 정적 팩터리 메서드: 변환
+    public static MemoryQuizQuestionDto fromList(List<QuizQuestion> entities, ObjectMapper objectMapper) {
+        if (entities == null || entities.isEmpty()) {
+            throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
+        }
+
+        // 1. 각 엔티티의 'image_url'을 추출하여 리스트화
+        List<String> fullImageUrls = entities.stream().map(e -> {
+            try {
+                JsonNode node = objectMapper.readTree(e.getDetailData());
+                return S3UrlUtils.convertToHttpUrl(node.path("image_url").asText());
+            } catch (Exception ex) {
+                return " ";
+            }
+        }).filter(url -> !url.isEmpty()).toList();
+
+        // 2. 정답을 콤마로 연결 (예: "사과, 의자, 당근")
+        String combinedAnswer = entities.stream()
+                .map(QuizQuestion::getAnswer)
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        QuizQuestion first = entities.get(0);
+        return new MemoryQuizQuestionDto(
+                first.getId(), // 대표 ID
+                first.getType(),
+                first.getQuestionFormat(),
+                "방금 나온 그림들을 순서대로 말씀해주세요!",
+                combinedAnswer,
+                fullImageUrls,
+                "VOICE", "SEQUENCE"
+        );
+    }
+
+
     public static MemoryQuizQuestionDto from(QuizQuestion entity, ObjectMapper objectMapper) {
         try {
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
 
-            String rawImageKey = jsonNode.path("image_url").asText();
-            String fullImageUrl = S3UrlUtils.convertToHttpUrl(rawImageKey);
+            List<String> rawKeys = objectMapper.convertValue(jsonNode.path("imageUrls"), new TypeReference<List<String>>() {
+            });
+
+            List<String> fullImageUrls = (rawKeys == null) ? List.of() : rawKeys.stream().map(S3UrlUtils::convertToHttpUrl).toList();
 
             return new MemoryQuizQuestionDto(
                     entity.getId(),
@@ -45,7 +83,7 @@ public record MemoryQuizQuestionDto(
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
                     entity.getAnswer(),
-                    fullImageUrl,
+                    fullImageUrls,
                     jsonNode.path("input_method").asText(),
                     jsonNode.path("required_sequence_type").asText());
         } catch (JsonProcessingException e) {
