@@ -69,9 +69,15 @@ dependencies {
 
     // AWS S3
     implementation 'software.amazon.awssdk:s3:2.31.32'
-    
+
     // webflux
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // MacOS 환경에서 Netty DNS 에러 해결 (M1/M2/M3 맥과 인텔 맥 모두 대응)
+    runtimeOnly "io.netty:netty-resolver-dns-native-macos:4.1.127.Final:osx-aarch_64"
+    runtimeOnly "io.netty:netty-resolver-dns-native-macos:4.1.127.Final:osx-x86_64"
+
+    runtimeOnly "io.netty:netty-transport-native-kqueue:4.1.127.Final:osx-aarch_64"
 }
 
 tasks.named('test') {
