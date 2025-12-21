@@ -35,6 +35,39 @@ public record MemoryQuizQuestionDto(
     }
 
     // [2] 정적 팩터리 메서드: 변환
+    public static MemoryQuizQuestionDto fromList(List<QuizQuestion> entities, ObjectMapper objectMapper) {
+        if (entities == null || entities.isEmpty()) {
+            throw new CustomException(QuizErrorCode.QUIZ_NOT_FOUND);
+        }
+
+        // 1. 각 엔티티의 'image_url'을 추출하여 리스트화
+        List<String> fullImageUrls = entities.stream().map(e -> {
+            try {
+                JsonNode node = objectMapper.readTree(e.getDetailData());
+                return S3UrlUtils.convertToHttpUrl(node.path("image_url").asText());
+            } catch (Exception ex) {
+                return " ";
+            }
+        }).filter(url -> !url.isEmpty()).toList();
+
+        // 2. 정답을 콤마로 연결 (예: "사과, 의자, 당근")
+        String combinedAnswer = entities.stream()
+                .map(QuizQuestion::getAnswer)
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        QuizQuestion first = entities.get(0);
+        return new MemoryQuizQuestionDto(
+                first.getId(), // 대표 ID
+                first.getType(),
+                first.getQuestionFormat(),
+                "방금 나온 그림들을 순서대로 말씀해주세요!",
+                combinedAnswer,
+                fullImageUrls,
+                "VOICE", "SEQUENCE"
+        );
+    }
+
+
     public static MemoryQuizQuestionDto from(QuizQuestion entity, ObjectMapper objectMapper) {
         try {
             JsonNode jsonNode = objectMapper.readTree(entity.getDetailData());
