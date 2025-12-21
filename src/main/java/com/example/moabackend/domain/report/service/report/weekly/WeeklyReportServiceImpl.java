@@ -3,7 +3,6 @@ package com.example.moabackend.domain.report.service.report.weekly;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
-import com.example.moabackend.domain.report.code.error.ReportErrorCode;
 import com.example.moabackend.domain.report.dto.res.WeeklyReportResponseDto;
 import com.example.moabackend.domain.report.dto.res.WeeklyScoreDto;
 import com.example.moabackend.domain.report.entity.Report;
@@ -115,11 +114,12 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
                 .plusWeeks(week - 1);
         LocalDate endOfWeek = startOfWeek.plusDays(6);
 
-        Report report = reportRepository.findByUserAndTypeAndDate(
-                user,
-                EReportType.WEEKLY,
-                startOfWeek
-        ).orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
+        Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.WEEKLY, startOfWeek)
+                .orElse(null);
+
+        if (report == null) {
+            return null;
+        }
 
         // 이번주 퀴즈 결과 조회
         List<QuizResult> thisWeek = quizResultRepository.findAllByUserIdAndDateBetween(
