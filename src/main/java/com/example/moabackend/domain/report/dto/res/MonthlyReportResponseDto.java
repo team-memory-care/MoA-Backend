@@ -2,7 +2,6 @@ package com.example.moabackend.domain.report.dto.res;
 
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
