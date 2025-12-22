@@ -20,7 +20,6 @@ import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +54,16 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         saveQuizResult(userId, saveRequest);
 
+        Object formattedAnswer = question.getAnswer();
+        if (question.getType() == EQuizType.MEMORY) {
+            formattedAnswer = Arrays.stream(question.getAnswer().split(",")).map(String::trim).toList();
+        }
+
         return new QuizSubmitResponseDto(
                 question.getId(),
                 question.getType(),
                 isCorrect,
-                question.getAnswer());
+                formattedAnswer);
     }
 
     @Override

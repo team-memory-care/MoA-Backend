@@ -6,6 +6,6 @@ public record QuizSubmitResponseDto(
         Long questionId,
         EQuizType quizType,
         boolean isCorrect,
-        String correctAnswer
+        Object correctAnswer
 ) {
 }

@@ -24,5 +24,5 @@ public sealed interface QuizQuestionDto permits
 
         String questionContent();
 
-        String answer();
+        Object answer();
 }
