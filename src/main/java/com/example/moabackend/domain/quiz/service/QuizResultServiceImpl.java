@@ -54,11 +54,16 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         saveQuizResult(userId, saveRequest);
 
+        Object formattedAnswer = question.getAnswer();
+        if (question.getType() == EQuizType.MEMORY) {
+            formattedAnswer = Arrays.stream(question.getAnswer().split(",")).map(String::trim).toList();
+        }
+
         return new QuizSubmitResponseDto(
                 question.getId(),
                 question.getType(),
                 isCorrect,
-                question.getAnswer());
+                formattedAnswer);
     }
 
     @Override
