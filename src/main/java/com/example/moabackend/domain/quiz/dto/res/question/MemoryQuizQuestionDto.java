@@ -18,7 +18,7 @@ public record MemoryQuizQuestionDto(
         EQuizType quizType,
         String questionFormat,
         String questionContent,
-        String answer,
+        List<String> answer,
 
         // 2. 유형별 필드
         List<String> imageUrls,
@@ -50,10 +50,8 @@ public record MemoryQuizQuestionDto(
             }
         }).filter(url -> !url.isEmpty()).toList();
 
-        // 2. 정답을 콤마로 연결 (예: "사과, 의자, 당근")
-        String combinedAnswer = entities.stream()
-                .map(QuizQuestion::getAnswer)
-                .collect(java.util.stream.Collectors.joining(", "));
+        // 2. 정답을 리스트로 수집 (예: ["사과", "의자", "당근"])
+        List<String> combinedAnswer = entities.stream().map(QuizQuestion::getAnswer).toList();
 
         QuizQuestion first = entities.get(0);
         return new MemoryQuizQuestionDto(
@@ -66,7 +64,6 @@ public record MemoryQuizQuestionDto(
                 "VOICE", "SEQUENCE"
         );
     }
-
 
     public static MemoryQuizQuestionDto from(QuizQuestion entity, ObjectMapper objectMapper) {
         try {
@@ -82,7 +79,7 @@ public record MemoryQuizQuestionDto(
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
-                    entity.getAnswer(),
+                    List.of(entity.getAnswer()),
                     fullImageUrls,
                     jsonNode.path("input_method").asText(),
                     jsonNode.path("required_sequence_type").asText());

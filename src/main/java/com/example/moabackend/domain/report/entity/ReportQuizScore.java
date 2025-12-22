@@ -1,7 +1,6 @@
 package com.example.moabackend.domain.report.entity;
 
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
