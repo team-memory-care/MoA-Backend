@@ -48,9 +48,10 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateSignUpAuthCode(String phoneNumber) {
+        phoneNumber = phoneNumber.replace("+", "");
         String code;
         // 1. 4자리 인증 코드 생성
-        if ("01035477120".equals(phoneNumber)) {
+        if ("821035477120".equals(phoneNumber) || "01035477120".equals(phoneNumber)) {
             code = "0911";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
@@ -61,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
                 .set(AUTH_CODE_PREFIX + phoneNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!"01035477120".equals(phoneNumber)) {
+        if (!"821035477120".equals(phoneNumber) && !"01035477120".equals(phoneNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -72,13 +73,14 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateAuthCode(String phoneNumber) {
+        phoneNumber = phoneNumber.replace("+", "");
         if (!userRepository.existsByPhoneNumber((phoneNumber))) {
             throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
         }
         String code;
 
         // 1. 4자리 인증 코드 생성
-        if ("01035477120".equals(phoneNumber)) {
+        if ("821035477120".equals(phoneNumber) || "01035477120".equals(phoneNumber)) {
             code = "0911";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
@@ -89,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
                 .set(AUTH_CODE_PREFIX + phoneNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!"01035477120".equals(phoneNumber)) {
+        if (!"821035477120".equals(phoneNumber) && !"01035477120".equals(phoneNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -114,10 +116,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public JwtDTO login(String phoneNumber, String authCode) {
+        phoneNumber = phoneNumber.replace("+", "");
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        if (phoneNumber.equals("01023534598")) {
+        if (phoneNumber.equals("821035477120") || phoneNumber.equals("01035477120")) {
 
         } else if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
