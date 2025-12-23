@@ -18,7 +18,7 @@ public record UserSignUpRequestDto(
 
         @NotBlank(message = "전화번호는 필수 입력값입니다.")
         @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "전화번호는 10~15자리의 숫자여야 합니다 (국가코드 포함 권장).")
-        @Schema(description = "전화번호(국가코드 포함, 예:82012345678)", example = "01012345678")
+        @Schema(description = "전화번호(국가코드 포함, 예: 821012345678)", example = "821012345678")
         String phoneNumber,
 
         @NotNull
