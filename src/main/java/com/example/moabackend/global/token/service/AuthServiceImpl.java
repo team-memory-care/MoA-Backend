@@ -29,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
 
     private static final long CODE_TTL_SECONDS = 300;
     private static final String AUTH_CODE_PREFIX = "auth:";
+    private static final String TEST_ACCOUNT_NUMBER = "821035477120";
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -43,15 +44,26 @@ public class AuthServiceImpl implements AuthService {
         return jwtDto;
     }
 
+    private String resolveTestNumber(String phoneNumber) {
+        String clean = phoneNumber.replaceAll("[^0-9]", "");
+
+        if (clean.equals("01035477120") ||
+                clean.equals("821035477120") ||
+                clean.equals("8201035477120")) {
+            return TEST_ACCOUNT_NUMBER;
+        }
+        return phoneNumber;
+    }
+
     /**
      * [회원가입용] 인증 코드를 생성, Redis에 저장하고 CoolSMS로 발송합니다. (사용자 존재 여부 검증 없음)
      */
     @Override
     public String generateSignUpAuthCode(String phoneNumber) {
-        phoneNumber = phoneNumber.replace("+", "");
+        String resolvedNumber = resolveTestNumber(phoneNumber);
         String code;
         // 1. 4자리 인증 코드 생성
-        if ("821035477120".equals(phoneNumber) || "01035477120".equals(phoneNumber)) {
+        if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             code = "0911";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
@@ -59,10 +71,10 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. Redis에 코드 저장 (키 통일)
         stringRedisTemplate.opsForValue()
-                .set(AUTH_CODE_PREFIX + phoneNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
+                .set(AUTH_CODE_PREFIX + resolvedNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!"821035477120".equals(phoneNumber) && !"01035477120".equals(phoneNumber)) {
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -73,14 +85,16 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateAuthCode(String phoneNumber) {
-        phoneNumber = phoneNumber.replace("+", "");
-        if (!userRepository.existsByPhoneNumber((phoneNumber))) {
-            throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
+        String resolvedNumber = resolveTestNumber(phoneNumber);
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+            if (!userRepository.existsByPhoneNumber(phoneNumber)) {
+                throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
+            }
         }
         String code;
 
         // 1. 4자리 인증 코드 생성
-        if ("821035477120".equals(phoneNumber) || "01035477120".equals(phoneNumber)) {
+        if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             code = "0911";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
@@ -88,10 +102,10 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. Redis에 코드 저장 (키 통일)
         stringRedisTemplate.opsForValue()
-                .set(AUTH_CODE_PREFIX + phoneNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
+                .set(AUTH_CODE_PREFIX + resolvedNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!"821035477120".equals(phoneNumber) && !"01035477120".equals(phoneNumber)) {
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -101,10 +115,11 @@ public class AuthServiceImpl implements AuthService {
      * 제출된 인증 코드를 Redis에 저장된 코드와 비교 검증합니다.
      */
     public boolean verifyAuthCode(String phoneNumber, String inputCode) {
-        String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + phoneNumber);
+        String resolvedNumber = resolveTestNumber(phoneNumber);
+        String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + resolvedNumber);
 
         if (savedCode != null && savedCode.equals(inputCode)) {
-            stringRedisTemplate.delete(AUTH_CODE_PREFIX + phoneNumber);
+            stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
             return true;
         }
         return false;
@@ -116,20 +131,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public JwtDTO login(String phoneNumber, String authCode) {
-        phoneNumber = phoneNumber.replace("+", "");
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        String resolvedNumber = resolveTestNumber(phoneNumber);
+        User user = userRepository.findByPhoneNumber(resolvedNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        if (phoneNumber.equals("821035477120") || phoneNumber.equals("01035477120")) {
-
+        // 테스트 계정 프리패스
+        if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
         } else if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
-
         if (user.getStatus() == EUserStatus.WITHDRAWN) {
             throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
         }
-
         if (user.getStatus() != EUserStatus.ACTIVE) {
             user.activate();
         }
