@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -174,6 +175,18 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
         return UserResponseDto.from(user);
+    }
+
+    @Override
+    public List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId) {
+        User user = userRepository.findWithParentsById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+
+        if (user.getRole() != ERole.CHILD) {
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+        return user.getParents().stream()
+                .map(ChildUserResponseDto.LinkedParentResponseDto::from)
+                .toList();
     }
 
     private JwtDTO reRegisterUser(User user, UserRegisterRequestDto request) {
