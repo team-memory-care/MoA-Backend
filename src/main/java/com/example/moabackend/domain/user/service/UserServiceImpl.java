@@ -189,6 +189,21 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public void disconnectParent(Long userId, Long parentId) {
+        User user = userRepository.findWithParentsById(userId).orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
+
+        if (user.getRole() != ERole.CHILD) {
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+        boolean removed = user.getParents().removeIf(parent -> parent.getId().equals(parentId));
+
+        if (!removed) {
+            throw new CustomException(GlobalErrorCode.NOT_FOUND);
+        }
+    }
+
     private JwtDTO reRegisterUser(User user, UserRegisterRequestDto request) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
