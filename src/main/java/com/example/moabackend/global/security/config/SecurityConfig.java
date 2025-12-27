@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request ->
                         request
                                 .requestMatchers(Constants.NO_NEED_AUTH.toArray(String[]::new)).permitAll()
+                                .requestMatchers("/api/v1/users/my-parents").hasRole("CHILD")
                                 .requestMatchers("/api/v1/users/role/child").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN") //
 
                                 .anyRequest().authenticated()
