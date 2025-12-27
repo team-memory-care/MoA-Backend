@@ -107,7 +107,6 @@ public class UserController {
     @GetMapping("/me")
     public BaseResponse<UserResponseDto> getUserInfo(
             @UserId Long userId) {
-
         UserResponseDto response = userService.findUserById(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
