@@ -6,6 +6,8 @@ import com.example.moabackend.domain.user.dto.res.ParentUserResponseDto;
 import com.example.moabackend.domain.user.dto.res.UserResponseDto;
 import com.example.moabackend.global.security.dto.JwtDTO;
 
+import java.util.List;
+
 public interface UserService {
 
     /**
@@ -46,4 +48,7 @@ public interface UserService {
 
     // [사용자 정보 조회 API]
     UserResponseDto findUserById(Long userId);
+
+    // [자녀용 부모 목록 조회 API]
+    List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId);
 }
