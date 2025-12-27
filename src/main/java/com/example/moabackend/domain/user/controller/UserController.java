@@ -88,17 +88,27 @@ public class UserController {
         return BaseResponse.success(UserSuccessCode.USER_WITHDRAW_SUCCESS, null);
     }
 
-    @GetMapping("/me")
-    public BaseResponse<UserResponseDto> getUserInfo(
-            @UserId Long userId) {
-        UserResponseDto response = userService.findUserById(userId);
-        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
-    }
-
     @Operation(summary = "연결된 부모 목록 조회", description = "자녀 계정으로 연결된 부모들의 정보를 조회합니다.")
     @GetMapping("/my-parents")
     public BaseResponse<List<ChildUserResponseDto.LinkedParentResponseDto>> getMyParents(@UserId Long userId) {
         List<ChildUserResponseDto.LinkedParentResponseDto> response = userService.getMyParents(userId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+    }
+
+    @Operation(summary = "연결된 부모 삭제", description = "자녀 계정에서 특정 부모와의 연결을 해제합니다.")
+    @DeleteMapping("/my-parents/{parentId}")
+    public BaseResponse<Void> disconnectParent(
+            @UserId Long userId,
+            @PathVariable Long parentId) {
+        userService.disconnectParent(userId, parentId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
+    }
+
+    @GetMapping("/me")
+    public BaseResponse<UserResponseDto> getUserInfo(
+            @UserId Long userId) {
+
+        UserResponseDto response = userService.findUserById(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 }
