@@ -51,4 +51,7 @@ public interface UserService {
 
     // [자녀용 부모 목록 조회 API]
     List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId);
+
+    // [자녀용 부모 연결 해제 API]
+    void disconnectParent(Long userId, Long parentId);
 }
