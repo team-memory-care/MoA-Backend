@@ -88,7 +88,10 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         updateAllTypeResultByCategory(user, LocalDate.now(), quizSaveRequestDto.category());
 
-        if (quizSaveRequestDto.category() == EQuizCategory.TODAY && hasCompletedTodaySet(userId, LocalDate.now())) {
+//        if (hasCompletedTodaySet(userId, LocalDate.now())) {
+//            reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
+//        }
+        if (hasCompletedAllQuiz(userId, LocalDate.now())) {
             reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
         }
     }
@@ -135,16 +138,16 @@ public class QuizResultServiceImpl implements QuizResultService {
     private boolean hasCompletedTodaySet(Long userId, LocalDate date) {
         List<EQuizType> completed = quizResultRepository.getCompletedQuizTypesByUserIdAndDateAndCategory(
                 userId, date, EQuizCategory.TODAY);
-        return completed.size() >= 5;
+        return completed.stream().filter(type -> type != EQuizType.ALL).count() >= 5;
     }
 
 
     @Override
     @Transactional(readOnly = true)
     public Boolean hasCompletedAllQuiz(Long userId, LocalDate date) {
-        List<EQuizType> completed = quizResultRepository.getCompletedQuizTypesByUserIdAndDateAndCategory(
-                userId, date, EQuizCategory.TODAY);
-        return completed.size() >= 5;
+        List<EQuizType> completed = quizResultRepository.getCompletedQuizTypes(
+                userId, date);
+        return completed.stream().filter(type -> type != EQuizType.ALL).count() >= 5;
     }
 
     @Override
