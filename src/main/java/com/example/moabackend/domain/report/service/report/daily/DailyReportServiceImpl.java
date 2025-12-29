@@ -89,7 +89,16 @@ public class DailyReportServiceImpl implements DailyReportService {
     public String createDailyPrompt(List<QuizResult> results) {
         String resultsJson;
         try {
-            resultsJson = objectMapper.writeValueAsString(results);
+            var simpleResults = results.stream()
+                    .map(r -> java.util.Map.of(
+                            "type", r.getType(),
+                            "category", r.getCategory(),
+                            "totalNumber", r.getTotalNumber(),
+                            "correctNumber", r.getCorrectNumber(),
+                            "date", r.getDate()
+                    ))
+                    .toList();
+            resultsJson = objectMapper.writeValueAsString(simpleResults);
         } catch (JsonProcessingException e) {
             throw new CustomException(GlobalErrorCode.BAD_JSON);
         }

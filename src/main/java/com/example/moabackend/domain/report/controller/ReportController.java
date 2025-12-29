@@ -24,9 +24,11 @@ public class ReportController {
     @GetMapping("/daily")
     public BaseResponse<DailyReportResponseDto> getReport(
             @UserId Long userId,
-            @RequestParam LocalDate date
+            @RequestParam LocalDate date,
+            @RequestParam(required = false) Long parentId
     ) {
-        return BaseResponse.success(reportFacade.getDailyReport(userId, date));
+        Long targetUserId = reportFacade.resolveTargetUserId(userId, parentId);
+        return BaseResponse.success(reportFacade.getDailyReport(targetUserId, date));
     }
 
     @GetMapping("/weekly")
@@ -34,17 +36,21 @@ public class ReportController {
             @UserId Long userId,
             @RequestParam @NotNull int year,
             @RequestParam @NotNull int month,
-            @RequestParam @NotNull int week
+            @RequestParam @NotNull int week,
+            @RequestParam(required = false) Long parentId
     ) {
-        return BaseResponse.success(reportFacade.getWeeklyReport(userId, year, month, week));
+        Long targetUserId = reportFacade.resolveTargetUserId(userId, parentId);
+        return BaseResponse.success(reportFacade.getWeeklyReport(targetUserId, year, month, week));
     }
 
     @GetMapping("/monthly")
     public BaseResponse<MonthlyReportResponseDto> getMonthlyReport(
             @UserId Long userId,
             @RequestParam @NotNull int year,
-            @RequestParam @NotNull int month
+            @RequestParam @NotNull int month,
+            @RequestParam(required = false) Long parentId
     ) {
-        return BaseResponse.success(reportFacade.getMonthlyReport(userId, year, month));
+        Long targetUserId = reportFacade.resolveTargetUserId(userId, parentId);
+        return BaseResponse.success(reportFacade.getMonthlyReport(targetUserId, year, month));
     }
 }
