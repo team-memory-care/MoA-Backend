@@ -28,7 +28,7 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
     List<EQuizType> getCompletedQuizTypesByUserIdAndDateAndCategory(
             @Param("userId") Long userId,
             @Param("date") LocalDate date,
-            @Param("categpry") EQuizCategory category);
+            @Param("category") EQuizCategory category);
 
     // 전체 완료 퀴즈 조회
     @Query("SELECT DISTINCT q.type FROM QuizResult q WHERE q.user.id = :userId AND q.date = :date")

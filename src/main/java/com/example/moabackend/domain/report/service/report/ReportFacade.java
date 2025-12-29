@@ -11,11 +11,14 @@ import com.example.moabackend.domain.report.service.report.weekly.WeeklyReportSe
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
+import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,29 @@ public class ReportFacade {
     private final WeeklyReportService weeklyReportService;
     private final MonthlyReportService monthlyReportService;
     private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public Long resolveTargetUserId(Long currentUserId, Long parentId) {
+        if (parentId == null) {
+            return currentUserId;
+        }
+
+        if (!userRepository.existsById(parentId)) {
+            throw new CustomException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        User parentUser = userRepository.findById(parentId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.getParents().contains(parentUser)) {
+            return parentId;
+        } else {
+            throw new CustomException(GlobalErrorCode.INVALID_HEADER_VALUE);
+        }
+    }
 
     public void generateDailyReport(User user, LocalDate today) {
         dailyReportService.generateDailyReport(user, today);
