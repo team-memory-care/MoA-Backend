@@ -25,6 +25,8 @@ import java.util.UUID;
 public class ImageServiceImpl implements ImageService {
 
     private final S3Client s3Client;
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
+
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
@@ -57,8 +59,8 @@ public class ImageServiceImpl implements ImageService {
 
         // 허용되지 않는 확장자 검증
         String extension = fileName.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtentionList = Arrays.asList("jpg", "jpeg", "png", "gif");
-        if (extension == null || !allowedExtentionList.contains(extension)) {
+
+        if (extension == null || !ALLOWED_EXTENSIONS.contains(extension)) {
             throw new CustomException(GlobalErrorCode.INVALID_FILE_EXTENSION);
         }
     }
