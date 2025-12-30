@@ -30,7 +30,7 @@ public class ReportQuizScore {
     private int totalNumber;
 
     @Builder
-    public ReportQuizScore(Report report, EQuizType type, Integer correctNumber, Integer totalNumber) {
+    public ReportQuizScore(Report report, EQuizType type, int correctNumber, int totalNumber) {
         this.report = report;
         this.type = type;
         this.correctNumber = correctNumber;
