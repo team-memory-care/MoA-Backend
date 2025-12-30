@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private static final long CODE_TTL_SECONDS = 300;
     private static final String AUTH_CODE_PREFIX = "auth:";
     private static final String TEST_ACCOUNT_NUMBER = "821035477120";
+    private static final Pattern NON_DIGIT_PATTERN = Pattern.compile("[^0-9]");
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -38,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AccessTokenDenyService accessTokenDenyService;
 
+
     public JwtDTO generateTokensForUser(User user) {
         JwtDTO jwtDto = jwtUtil.generateTokens(user.getId(), user.getRole());
         refreshTokenService.saveRefreshToken(user.getId(), jwtDto.refreshToken());
@@ -45,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String resolveTestNumber(String phoneNumber) {
-        String clean = phoneNumber.replaceAll("[^0-9]", "");
+        String clean = NON_DIGIT_PATTERN.matcher(phoneNumber).replaceAll("");
 
         if (clean.equals("01035477120") ||
                 clean.equals("821035477120") ||
