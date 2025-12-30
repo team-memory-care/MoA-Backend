@@ -24,10 +24,10 @@ public class ReportQuizScore {
     private EQuizType type;
 
     @Column(nullable = false)
-    private Integer correctNumber;
+    private int correctNumber;
 
     @Column(nullable = false)
-    private Integer totalNumber;
+    private int totalNumber;
 
     @Builder
     public ReportQuizScore(Report report, EQuizType type, Integer correctNumber, Integer totalNumber) {
