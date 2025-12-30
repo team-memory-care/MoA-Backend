@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -38,6 +39,7 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ReportEventProducer reportEventProducer;
+    private static final Pattern CLEANUP_PATTERN = Pattern.compile("[\\s,]");
 
     @Override
     @Transactional
@@ -88,9 +90,6 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         updateAllTypeResultByCategory(user, LocalDate.now(), quizSaveRequestDto.category());
 
-//        if (hasCompletedTodaySet(userId, LocalDate.now())) {
-//            reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
-//        }
         if (hasCompletedAllQuiz(userId, LocalDate.now())) {
             reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
         }
@@ -166,8 +165,8 @@ public class QuizResultServiceImpl implements QuizResultService {
         }
 
         if (question.getType() == EQuizType.MEMORY) {
-            String normalizedDb = question.getAnswer().replaceAll("[\\s,]", "").toLowerCase();
-            String normalizedUser = userAnswer.replaceAll("[\\s,]", "").toLowerCase();
+            String normalizedDb = CLEANUP_PATTERN.matcher(question.getAnswer()).replaceAll("").toLowerCase();
+            String normalizedUser = CLEANUP_PATTERN.matcher(userAnswer).replaceAll("").toLowerCase();
             return normalizedDb.equals(normalizedUser);
         }
         return question.getAnswer().trim().equalsIgnoreCase(userAnswer.trim());
