@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface UserService {
 
+    // --- [회원가입 관련 (Onboarding Flow)] ---
+
     /**
      * 1. 인증 코드 발송
      * 입력받은 전화번호로 SMS 인증 코드를 전송합니다.
@@ -29,29 +31,52 @@ public interface UserService {
     ParentUserResponseDto selectParentRole(Long userId);
 
     /**
-     * 역할 선택: 자녀 (Child)
-     * 사용자의 역할을 '자녀'로 확정하고, 입력받은 코드로 부모와 연결합니다.
+     * 부모 코드 검증 (온보딩_2)
+     * 실제 연결을 수행하지 않고, 입력된 코드로 부모의 존재 여부와 기본 정보를 반환합니다.
      */
-    ChildUserResponseDto selectChildRoleAndLinkParent(Long userId, String parentCode);
+    ChildUserResponseDto.LinkedParentResponseDto verifyParentCode(String parentCode);
+
+    /**
+     * 부모 자녀 최종 연결 (온보딩_3)
+     * 자녀의 역할을 확정하고 특정 부모(ID 기반)와 관계를 생성합니다.
+     */
+    ChildUserResponseDto linkParent(Long userId, Long parentId);
+
+
+    // --- [사용자 정보 및 상태 관리] ---
+
+    /**
+     * 사용자 정보 조회
+     */
+    UserResponseDto findUserById(Long userId);
+
+    /**
+     * 부모 정보 단일 조회 (온보딩_3)
+     * 부모 ID를 기반으로 해당 부모의 정보를 조회합니다.
+     */
+    ChildUserResponseDto.LinkedParentResponseDto getParentInfoById(Long parentId);
 
     /**
      * 부모 코드 신규 발급
-     *부모 사용자의 고유 연결 코드를 새로 발급합니다. (POST 전용)
+     * 부모 사용자의 고유 연결 코드를 새로 발급합니다.
      */
     String issueParentCode(Long userId);
 
     /**
      * 부모 코드 조회
-     * 부모 사용자의 고유 연결 코드를 조회합니다. (GET 전용)
+     * 부모 사용자의 고유 연결 코드를 조회합니다.
      */
     String getParentCode(Long userId);
 
-    // [사용자 정보 조회 API]
-    UserResponseDto findUserById(Long userId);
-
-    // [자녀용 부모 목록 조회 API]
+    /**
+     * 연결된 부모 목록 조회
+     * 자녀 계정으로 연결된 부모들의 정보를 조회합니다.
+     */
     List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId);
 
-    // [자녀용 부모 연결 해제 API]
+    /**
+     * 연결된 부모 삭제
+     * 자녀 계정에서 특정 부모와의 연결을 해제합니다.
+     */
     void disconnectParent(Long userId, Long parentId);
 }
