@@ -56,16 +56,38 @@ public class UserController {
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 
-    @Operation(summary = "자녀 역할 선택", description = "가입 후 역할을 '자녀'로 확정하고 부모와 연결합니다.")
-    @PostMapping("/role/child")
-    public BaseResponse<ChildUserResponseDto> selectChildRole(
+    @Operation(summary = "부모 코드 검증", description = "입력한 코드가 유효한지 확인하고 부모 정보를 반환합니다. (실제 연결X)")
+    @GetMapping("/parent-code/{parentCode}/verify")
+    public BaseResponse<ChildUserResponseDto.LinkedParentResponseDto> verifyParentCode(
+            @PathVariable String parentCode) {
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, userService.verifyParentCode(parentCode));
+    }
+
+    @Operation(summary = "부모 자녀 최종 연결", description = "확인된 부모 ID를 사용하여 실제 연결을 완료하고 역할을 자녀(CHILD)로 확정합니다.")
+    @PostMapping("/link-parent")
+    public BaseResponse<ChildUserResponseDto> linkParent(
             @UserId Long userId,
-            @Valid @RequestBody ChildRoleSelectionRequestDto request) {
-        ChildUserResponseDto response = userService.selectChildRoleAndLinkParent(userId, request.parentCode());
+            @RequestParam Long parentId) {
+        ChildUserResponseDto response = userService.linkParent(userId, parentId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
     }
 
     // --- [사용자 정보 및 상태 관리] ---
+
+    @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 상세 정보를 조회합니다.")
+    @GetMapping("/me")
+    public BaseResponse<UserResponseDto> getUserInfo(
+            @UserId Long userId) {
+        UserResponseDto response = userService.findUserById(userId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+    }
+
+    @Operation(summary = "부모 정보 단일 조회", description = "부모 ID를 기반으로 정보를 조회합니다.")
+    @GetMapping("/parent/{parentId}")
+    public BaseResponse<ChildUserResponseDto.LinkedParentResponseDto> getParentInfo(
+            @PathVariable Long parentId) {
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, userService.getParentInfoById(parentId));
+    }
 
     @Operation(summary = "부모 코드 발급", description = "부모 회원의 고유 코드를 새로 발급합니다.")
     @PostMapping("/parent-code/issue")
@@ -79,13 +101,6 @@ public class UserController {
     public BaseResponse<String> getParentCode(@UserId Long userId) {
         String code = userService.getParentCode(userId);
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, code);
-    }
-
-    @Operation(summary = "회원 탈퇴", description = "회원 정보를 삭제(비활성화)하고 토큰을 만료시킵니다.")
-    @DeleteMapping("/withdraw")
-    public BaseResponse<Void> withdraw(@UserId Long userId) {
-        authService.withdraw(userId);
-        return BaseResponse.success(UserSuccessCode.USER_WITHDRAW_SUCCESS, null);
     }
 
     @Operation(summary = "연결된 부모 목록 조회", description = "자녀 계정으로 연결된 부모들의 정보를 조회합니다.")
@@ -104,10 +119,10 @@ public class UserController {
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 
-    @GetMapping("/me")
-    public BaseResponse<UserResponseDto> getUserInfo(
-            @UserId Long userId) {
-        UserResponseDto response = userService.findUserById(userId);
-        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+    @Operation(summary = "회원 탈퇴", description = "회원 정보를 삭제(비활성화)하고 토큰을 만료시킵니다.")
+    @DeleteMapping("/withdraw")
+    public BaseResponse<Void> withdraw(@UserId Long userId) {
+        authService.withdraw(userId);
+        return BaseResponse.success(UserSuccessCode.USER_WITHDRAW_SUCCESS, null);
     }
 }
