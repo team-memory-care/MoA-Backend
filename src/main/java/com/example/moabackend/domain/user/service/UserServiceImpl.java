@@ -60,10 +60,12 @@ public class UserServiceImpl implements UserService {
                 return reRegisterUser(existUser, request);
             }
 
-            log.info("Existing active user login: {}", request.phoneNumber());
-            return authService.generateTokensForUser(existUser);
+            if (existUser.getStatus() == EUserStatus.ACTIVE) {
+                log.info("Existing active user login: {}", request.phoneNumber());
+                return authService.generateTokensForUser(existUser);
+            }
+            throw new CustomException(UserErrorCode.USER_STATUS_INVALID);
         }
-
         log.info("New user registration: {}", request.phoneNumber());
         return createNewUser(request);
     }
