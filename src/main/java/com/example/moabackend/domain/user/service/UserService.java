@@ -20,7 +20,10 @@ public interface UserService {
 
     /**
      * 2. 회원가입 완료 및 로그인
-     * 인증 코드 검증 성공 시 회원 정보를 생성(또는 갱신)하고 JWT 토큰을 발급합니다.
+     * 인증 코드 검증 성공 시:
+     * - 신규 유저: 회원 정보 생성 후 토큰 발급
+     * - 기존 유저(ACTIVE): 즉시 로그인 처리 (토큰 발급)
+     * - 기존 유저(WITHDRAWN): 회원 정보 갱신(재가입) 후 토큰 발급
      */
     JwtDTO confirmSignUpAndLogin(UserRegisterRequestDto request);
 
