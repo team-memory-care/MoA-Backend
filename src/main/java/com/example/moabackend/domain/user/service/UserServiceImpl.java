@@ -40,11 +40,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String requestSignUpSms(String phoneNumber) {
-        userRepository.findByPhoneNumber(phoneNumber).ifPresent(user -> {
-            if (user.getStatus() != EUserStatus.WITHDRAWN) {
-                throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
-            }
-        });
         return authService.generateSignUpAuthCode(phoneNumber);
     }
 
@@ -59,13 +54,17 @@ public class UserServiceImpl implements UserService {
         }
 
         User existUser = userRepository.findByPhoneNumber(request.phoneNumber()).orElse(null);
+
         if (existUser != null) {
-            if (existUser.getStatus() != EUserStatus.WITHDRAWN) {
-                throw new CustomException(GlobalErrorCode.ALREADY_EXISTS);
+            if (existUser.getStatus() == EUserStatus.WITHDRAWN) {
+                return reRegisterUser(existUser, request);
             }
-            return reRegisterUser(existUser, request);
+
+            log.info("Existing active user login: {}", request.phoneNumber());
+            return authService.generateTokensForUser(existUser);
         }
 
+        log.info("New user registration: {}", request.phoneNumber());
         return createNewUser(request);
     }
 
