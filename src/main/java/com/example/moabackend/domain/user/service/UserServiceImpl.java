@@ -89,9 +89,15 @@ public class UserServiceImpl implements UserService {
      * 부모 코드 검증 (온보딩_2)
      */
     @Override
-    public ChildUserResponseDto.LinkedParentResponseDto verifyParentCode(String parentCode) {
+    public ChildUserResponseDto.LinkedParentResponseDto verifyParentCode(Long userId, String parentCode) {
         User parentUser = userRepository.findByParentCode(parentCode)
                 .orElseThrow(() -> new CustomException(UserErrorCode.INVALID_PARENT_CODE));
+
+        if (parentUser.getId().equals(userId)) {
+            log.warn("[Security] User {} tried to verify their own parent code", userId);
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+        log.info("[Verify] User {} verified parent code for parent: {}", userId, parentUser.getId());
         return ChildUserResponseDto.LinkedParentResponseDto.from(parentUser);
     }
 

@@ -37,7 +37,7 @@ public interface UserService {
      * 부모 코드 검증 (온보딩_2)
      * 실제 연결을 수행하지 않고, 입력된 코드로 부모의 존재 여부와 기본 정보를 반환합니다.
      */
-    ChildUserResponseDto.LinkedParentResponseDto verifyParentCode(String parentCode);
+    ChildUserResponseDto.LinkedParentResponseDto verifyParentCode(Long userId, String parentCode);
 
     /**
      * 부모 자녀 최종 연결 (온보딩_3)

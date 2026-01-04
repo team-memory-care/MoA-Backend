@@ -1,7 +1,6 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
-import com.example.moabackend.domain.user.dto.req.ChildRoleSelectionRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
@@ -59,8 +58,9 @@ public class UserController {
     @Operation(summary = "부모 코드 검증", description = "입력한 코드가 유효한지 확인하고 부모 정보를 반환합니다. (실제 연결X)")
     @GetMapping("/parent-code/{parentCode}/verify")
     public BaseResponse<ChildUserResponseDto.LinkedParentResponseDto> verifyParentCode(
+            @UserId Long userId,
             @PathVariable String parentCode) {
-        return BaseResponse.success(GlobalSuccessCode.SUCCESS, userService.verifyParentCode(parentCode));
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, userService.verifyParentCode(userId, parentCode));
     }
 
     @Operation(summary = "부모 자녀 최종 연결", description = "확인된 부모 ID를 사용하여 실제 연결을 완료하고 역할을 자녀(CHILD)로 확정합니다.")
