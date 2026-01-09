@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.dto.req;
 
 import com.example.moabackend.domain.user.entity.type.ERole;
+import com.example.moabackend.global.constant.ValidationConstants;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -12,7 +13,7 @@ public record ChildRoleSelectionRequestDto(
 
         @NotBlank(message = "부모 회원 코드는 필수 입력 값입니다.")
         @Size(max = 4, message = "부모 회원코드는 4자리 숫자여야 합니다.")
-        @Pattern(regexp = "^\\d{4}$", message = "부모 회원코드는 4자리 숫자여야 합니다.")
+        @Pattern(regexp = ValidationConstants.AUTH_CODE_REGEX, message = ValidationConstants.AUTH_CODE_MESSAGE)
         @Schema(description = "부모 회원코드", example = "4321")
         String parentCode
 ) {
