@@ -24,4 +24,11 @@ public class NotificationController {
     ) {
         return BaseResponse.success(NotificationSuccessCode.FIND_ALL_NOTIFICATION, notificationService.findAllNotification(userId));
     }
+
+    @GetMapping("/not-read")
+    public BaseResponse<Integer> countIsNotReadNotification(
+            @UserId Long userId
+    ) {
+        return BaseResponse.success(NotificationSuccessCode.COUNT_NOT_READ_NOTIFICATION, notificationService.countIsNotReadNotification(userId));
+    }
 }

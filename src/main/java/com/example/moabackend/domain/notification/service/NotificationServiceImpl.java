@@ -46,15 +46,22 @@ public class NotificationServiceImpl implements NotificationService {
         Report report = reportRepository.findById(payload.reportId())
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND));
 
+        Notification notification = Notification.builder()
+                .user(user)
+                .title(payload.title())
+                .body(payload.body())
+                .report(report)
+                .build();
+
         notificationRepository.save(
-                Notification.builder()
-                        .user(user)
-                        .title(payload.title())
-                        .body(payload.body())
-                        .report(report)
-                        .build()
+                notification
         );
 
-        sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION, NotificationConverter.payloadToDto(payload));
+        sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION, NotificationConverter.payloadToDto(payload, notification.getDateTime()));
+    }
+
+    @Override
+    public int countIsNotReadNotification(Long userId) {
+        return notificationRepository.findNotReadNotification(userId);
     }
 }

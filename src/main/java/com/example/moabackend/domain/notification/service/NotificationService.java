@@ -9,4 +9,6 @@ public interface NotificationService {
     List<NotificationResponseDto> findAllNotification(Long userId);
 
     void processNotification(NotificationPayload payload);
+
+    int countIsNotReadNotification(Long userId);
 }
