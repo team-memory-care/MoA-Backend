@@ -29,7 +29,7 @@ public class FcmConfig {
         }
 
         try {
-            if (fcmCertification == null | fcmCertification.isEmpty()) {
+            if (fcmCertification == null || fcmCertification.isEmpty()) {
                 log.warn("FCM Json이 비어있습니다.");
                 throw new CustomException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
             }
