@@ -56,6 +56,9 @@ public class User {
     @Column(name = "parentCode", unique = true, nullable = true, length = 4)
     private String parentCode;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     @Builder
     public User(String name, LocalDate birthDate, String phoneNumber, ERole role,
                 EUserStatus status, EUserGender gender, String parentCode, User parent) {
@@ -66,6 +69,10 @@ public class User {
         this.status = status;
         this.gender = gender;
         this.parentCode = parentCode;
+    }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     public void withdraw() {

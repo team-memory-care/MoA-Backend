@@ -1,19 +1,7 @@
 package com.example.moabackend.domain.notification.event;
 
-import com.example.moabackend.domain.notification.converter.NotificationConverter;
 import com.example.moabackend.domain.notification.dto.NotificationPayload;
-import com.example.moabackend.domain.notification.entity.Notification;
-import com.example.moabackend.domain.notification.repository.NotificationRepository;
 import com.example.moabackend.domain.notification.service.NotificationService;
-import com.example.moabackend.domain.report.entity.Report;
-import com.example.moabackend.domain.report.repository.ReportRepository;
-import com.example.moabackend.domain.sse.dto.EMessageType;
-import com.example.moabackend.domain.sse.service.SseEmitterService;
-import com.example.moabackend.domain.user.code.UserErrorCode;
-import com.example.moabackend.domain.user.entity.User;
-import com.example.moabackend.domain.user.repository.UserRepository;
-import com.example.moabackend.global.code.GlobalErrorCode;
-import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

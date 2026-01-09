@@ -28,6 +28,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final SseEmitterService sseService;
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,21 +48,19 @@ public class NotificationServiceImpl implements NotificationService {
         Report report = reportRepository.findById(payload.reportId())
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND));
 
-        Notification notification = Notification.builder()
-                .user(user)
-                .title(payload.title())
-                .body(payload.body())
-                .report(report)
-                .build();
-
-        notificationRepository.save(
-                notification
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .user(user)
+                        .title(payload.title())
+                        .body(payload.body())
+                        .report(report)
+                        .build()
         );
 
-        sseService.sendToClient(
-                payload.userId(),
-                EMessageType.NOTIFICATION,
+        sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION,
                 NotificationConverter.payloadToDto(notification.getId(), payload, notification.getDateTime()));
+
+        fcmService.sendMessage(user.getFcmToken(), payload.title(), payload.body(), payload.reportId());
     }
 
     @Override
