@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public ChildUserResponseDto linkParent(Long userId, Long parentId) {
+    public void linkParent(Long userId, Long parentId) {
         User user = getUserOrThrow(userId);
         User parentUser = userRepository.findById(parentId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
@@ -121,8 +121,6 @@ public class UserServiceImpl implements UserService {
 
         user.addParent(parentUser);
         user.completeRoleSelection(ERole.CHILD, null);
-
-        return ChildUserResponseDto.from(user);
     }
 
     // --- [사용자 정보 및 상태 관리] ---

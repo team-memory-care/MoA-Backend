@@ -66,11 +66,11 @@ public class UserController {
 
     @Operation(summary = "부모 자녀 최종 연결", description = "확인된 부모 ID를 사용하여 실제 연결을 완료하고 역할을 자녀(CHILD)로 확정합니다.")
     @PostMapping("/link-parent")
-    public BaseResponse<ChildUserResponseDto> linkParent(
+    public BaseResponse<Void> linkParent(
             @UserId Long userId,
             @RequestParam Long parentId) {
-        ChildUserResponseDto response = userService.linkParent(userId, parentId);
-        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+        userService.linkParent(userId, parentId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 
     // --- [사용자 정보 및 상태 관리] ---
