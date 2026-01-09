@@ -118,24 +118,29 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
             return null;
         }
 
-        LocalDate startOfMonth = reportDate.with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate endOfMonth = reportDate.with(TemporalAdjusters.lastDayOfMonth());
+        return getMonthlyReport(report);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MonthlyReportResponseDto getMonthlyReport(Report report) {
+        LocalDate startOfMonth = report.getDate().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate endOfMonth = report.getDate().with(TemporalAdjusters.lastDayOfMonth());
 
         List<QuizResult> thisMonth = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), startOfMonth, endOfMonth
+                report.getUser().getId(), startOfMonth, endOfMonth
         );
 
         LocalDate lastMonthStart = startOfMonth.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastMonthEnd = lastMonthStart.with(TemporalAdjusters.lastDayOfMonth());
 
         List<QuizResult> lastMonth = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), lastMonthStart, lastMonthEnd
+                report.getUser().getId(), lastMonthStart, lastMonthEnd
         );
 
         Map<EQuizType, List<MonthlyScoreDto>> scoreResult =
                 buildMonthlyScoreResult(thisMonth, lastMonth, startOfMonth);
 
-        // --- 6. 최종 DTO 생성 ---
         return new MonthlyReportResponseDto(
                 report.getOneLineReview(),
                 report.getCompleteRate(),

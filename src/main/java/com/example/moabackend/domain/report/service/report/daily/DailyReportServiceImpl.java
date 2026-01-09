@@ -51,8 +51,13 @@ public class DailyReportServiceImpl implements DailyReportService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         return reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, date)
-                .map(reportConverter::toDailyAdviceListDto)
+                .map(this::getDailyReport)
                 .orElse(null);
+    }
+
+    @Override
+    public DailyReportResponseDto getDailyReport(Report report) {
+        return reportConverter.toDailyAdviceListDto(report);
     }
 
     @Override

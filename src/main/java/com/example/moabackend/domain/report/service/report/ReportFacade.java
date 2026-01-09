@@ -5,6 +5,8 @@ import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
 import com.example.moabackend.domain.report.dto.res.DailyReportResponseDto;
 import com.example.moabackend.domain.report.dto.res.MonthlyReportResponseDto;
 import com.example.moabackend.domain.report.dto.res.WeeklyReportResponseDto;
+import com.example.moabackend.domain.report.entity.Report;
+import com.example.moabackend.domain.report.repository.ReportRepository;
 import com.example.moabackend.domain.report.service.report.daily.DailyReportService;
 import com.example.moabackend.domain.report.service.report.monthly.MonthlyReportService;
 import com.example.moabackend.domain.report.service.report.weekly.WeeklyReportService;
@@ -26,6 +28,20 @@ public class ReportFacade {
     private final WeeklyReportService weeklyReportService;
     private final MonthlyReportService monthlyReportService;
     private final UserRepository userRepository;
+    private final ReportRepository reportRepository;
+
+    @Transactional(readOnly = true)
+    public Object getReportById(Long reportId) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
+
+        return switch (report.getType()) {
+            case DAILY -> dailyReportService.getDailyReport(report);
+            case WEEKLY -> weeklyReportService.getWeeklyReport(report);
+            case MONTHLY -> monthlyReportService.getMonthlyReport(report);
+            default -> throw new CustomException(GlobalErrorCode.NOT_FOUND);
+        };
+    }
 
     @Transactional(readOnly = true)
     public Long resolveTargetUserId(Long currentUserId, Long parentId) {
