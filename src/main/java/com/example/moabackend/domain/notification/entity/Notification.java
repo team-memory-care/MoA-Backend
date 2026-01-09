@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +35,8 @@ public class Notification {
     Boolean isRead = false;
 
     @Column
-    LocalDateTime dateTime = LocalDateTime.now();
+    @CreationTimestamp
+    LocalDateTime dateTime;
 
     @Builder
     public Notification(User user, Report report, String title, String body) {
