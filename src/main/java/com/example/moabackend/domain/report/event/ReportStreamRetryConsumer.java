@@ -51,62 +51,81 @@ public class ReportStreamRetryConsumer {
 
                 MapRecord<String, Object, Object> msg = records.get(0);
 
-                int retryCount = Integer.parseInt(msg.getValue().get(REPORT_RETRY_COUNT).toString());
-                String payloadJson = msg.getValue().get(REPORT_MESSAGE_MAP_KEY).toString();
+                int retryCount = parseInt(msg.getValue().get(REPORT_RETRY_COUNT), 0);
+                String payloadJson = String.valueOf(msg.getValue().get(REPORT_MESSAGE_MAP_KEY));
 
                 ReportMessagePayload payload =
                         objectMapper.readValue(payloadJson, ReportMessagePayload.class);
+
                 try {
                     reportFacade.processReport(payload);
+                    ack(msg);
+                    log.info("Report retry success. id={}", msg.getId());
 
-                    redisTemplate.opsForStream()
-                            .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
-
-                    log.info("Retry success: {}", msg.getId());
                 } catch (OpenAiRateLimitException rateEx) {
-                    long backoff = (long) Math.pow(2, retryCount) * 1000;
-                    backoff = Math.min(backoff, 30000);
-
-                    log.warn("RateLimit 429. backoff {}ms (retry={})", backoff, retryCount);
-
-                    Thread.sleep(backoff);
+                    long backoffMs = calcBackoffMs(retryCount);
+                    log.warn("OpenAI 429. backoff={}ms id={}", backoffMs, msg.getId());
+                    Thread.sleep(backoffMs);
                 } catch (Exception ex) {
                     retryCount++;
+                    log.warn("Report retry failed. id={} retryCount={}", msg.getId(), retryCount);
 
                     if (retryCount >= 3) {
-                        moveToDLQ(msg, retryCount);
-                        redisTemplate.opsForStream()
-                                .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
+                        moveToDLQ(payloadJson, retryCount);
+                        ack(msg);
+                        log.error("Moved to Report DLQ. id={}", msg.getId());
                     } else {
-                        redisTemplate.opsForHash().put(
-                                STREAM_ENTRY_KEY(msg),
-                                REPORT_RETRY_COUNT,
-                                retryCount
-                        );
+                        requeue(payloadJson, retryCount);
+                        ack(msg);
                     }
                 }
-            } catch (Exception ex) {
-                log.error("Unexpected error during retry", ex);
+            } catch (Exception e) {
+                log.error("Unexpected report retry error", e);
             }
         }
     }
 
-    private String STREAM_ENTRY_KEY(MapRecord<String, Object, Object> msg) {
-        return REPORT_STREAM_KEY + "-" + msg.getId();
-    }
 
-    private void moveToDLQ(MapRecord<String, Object, Object> msg, int retryCount) {
+    private void requeue(String payloadJson, int retryCount) {
         redisTemplate.opsForStream().add(
                 StreamRecords.newRecord()
                         .ofMap(Map.of(
-                                REPORT_MESSAGE_MAP_KEY,
-                                msg.getValue().get(REPORT_MESSAGE_MAP_KEY),
-                                REPORT_RETRY_COUNT, retryCount
+                                REPORT_MESSAGE_MAP_KEY, payloadJson,
+                                REPORT_RETRY_COUNT, String.valueOf(retryCount)
+                        ))
+                        .withStreamKey(REPORT_STREAM_KEY),
+                RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
+        );
+    }
+
+    private void moveToDLQ(String payloadJson, int retryCount) {
+        redisTemplate.opsForStream().add(
+                StreamRecords.newRecord()
+                        .ofMap(Map.of(
+                                REPORT_MESSAGE_MAP_KEY, payloadJson,
+                                REPORT_RETRY_COUNT, String.valueOf(retryCount)
                         ))
                         .withStreamKey(REPORT_DLQ_STREAM_KEY),
                 RedisStreamCommands.XAddOptions.maxlen(REDIS_STREAM_MAX_LEN).approximateTrimming(true)
         );
+    }
 
-        log.error("Moved to DLQ: {}", msg.getId());
+    private void ack(MapRecord<String, Object, Object> msg) {
+        redisTemplate.opsForStream()
+                .acknowledge(REPORT_STREAM_KEY, REPORT_GROUP, msg.getId());
+    }
+
+    private int parseInt(Object v, int defaultVal) {
+        try {
+            if (v == null) return defaultVal;
+            return Integer.parseInt(String.valueOf(v));
+        } catch (Exception e) {
+            return defaultVal;
+        }
+    }
+
+    private long calcBackoffMs(int retryCount) {
+        long ms = (long) Math.pow(2, Math.max(retryCount, 1)) * 1000L;
+        return Math.min(ms, 30_000L);
     }
 }

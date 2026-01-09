@@ -72,3 +72,6 @@ openai:
 logging:
   level:
     web: debug
+
+fcm:
+  certification: ${FIREBASE_SERVICE_ACCOUNT}

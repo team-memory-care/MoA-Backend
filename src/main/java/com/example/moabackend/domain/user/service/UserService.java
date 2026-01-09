@@ -43,7 +43,7 @@ public interface UserService {
      * 부모 자녀 최종 연결 (온보딩_3)
      * 자녀의 역할을 확정하고 특정 부모(ID 기반)와 관계를 생성합니다.
      */
-    ChildUserResponseDto linkParent(Long userId, Long parentId);
+    void linkParent(Long userId, Long parentId);
 
 
     // --- [사용자 정보 및 상태 관리] ---
@@ -76,6 +76,11 @@ public interface UserService {
      * 자녀 계정으로 연결된 부모들의 정보를 조회합니다.
      */
     List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId);
+
+    /**
+     * FCM 토큰 업데이트
+     */
+    void updateFcmToken(Long userId, String fcmToken);
 
     /**
      * 연결된 부모 삭제

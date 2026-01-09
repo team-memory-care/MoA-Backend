@@ -1,4 +1,4 @@
-package com.example.moabackend.global.config;
+package com.example.moabackend.global.config.redis;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class ReportStreamInitializer {
     }
 
     private void ensureStreamExists() {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(REPORT_STREAM_KEY))) {
+        if (!redisTemplate.hasKey(REPORT_STREAM_KEY)) {
             redisTemplate.opsForStream().add(
                     StreamRecords.newRecord()
                             .ofMap(Map.of("seed", "init"))

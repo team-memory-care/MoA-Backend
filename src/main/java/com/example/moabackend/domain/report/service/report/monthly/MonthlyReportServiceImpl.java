@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report.monthly;
 
+import com.example.moabackend.domain.notification.event.NotificationEventPublisher;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
@@ -42,6 +43,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
     private final QuizResultRepository quizResultRepository;
     private final OpenAiService openAiService;
     private final UserRepository userRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     @Transactional
@@ -93,6 +95,12 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                 .build();
 
         reportRepository.save(report);
+
+        List<User> childs = userRepository.findAllByParents_Id(user.getId());
+
+        for (User child : childs) {
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report, EReportType.MONTHLY, today);
+        }
     }
 
     @Override
@@ -102,9 +110,6 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         LocalDate reportDate = LocalDate.of(year, month, 1);
-//        Report report = reportRepository.findByUserAndTypeAndDate(
-//                user, EReportType.MONTHLY, reportDate
-//        ).orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
 
         Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.MONTHLY, reportDate)
                 .orElse(null);
@@ -113,24 +118,29 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
             return null;
         }
 
-        LocalDate startOfMonth = reportDate.with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate endOfMonth = reportDate.with(TemporalAdjusters.lastDayOfMonth());
+        return getMonthlyReport(report);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MonthlyReportResponseDto getMonthlyReport(Report report) {
+        LocalDate startOfMonth = report.getDate().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate endOfMonth = report.getDate().with(TemporalAdjusters.lastDayOfMonth());
 
         List<QuizResult> thisMonth = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), startOfMonth, endOfMonth
+                report.getUser().getId(), startOfMonth, endOfMonth
         );
 
         LocalDate lastMonthStart = startOfMonth.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastMonthEnd = lastMonthStart.with(TemporalAdjusters.lastDayOfMonth());
 
         List<QuizResult> lastMonth = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), lastMonthStart, lastMonthEnd
+                report.getUser().getId(), lastMonthStart, lastMonthEnd
         );
 
         Map<EQuizType, List<MonthlyScoreDto>> scoreResult =
                 buildMonthlyScoreResult(thisMonth, lastMonth, startOfMonth);
 
-        // --- 6. 최종 DTO 생성 ---
         return new MonthlyReportResponseDto(
                 report.getOneLineReview(),
                 report.getCompleteRate(),

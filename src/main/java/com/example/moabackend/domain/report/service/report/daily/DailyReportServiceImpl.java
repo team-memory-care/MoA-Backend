@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report.daily;
 
+import com.example.moabackend.domain.notification.event.NotificationEventPublisher;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
 import com.example.moabackend.domain.report.converter.ReportConverter;
@@ -10,6 +11,8 @@ import com.example.moabackend.domain.report.entity.Report;
 import com.example.moabackend.domain.report.entity.type.EReportType;
 import com.example.moabackend.domain.report.repository.ReportRepository;
 import com.example.moabackend.domain.report.service.ai.OpenAiService;
+import com.example.moabackend.domain.sse.dto.EMessageType;
+import com.example.moabackend.domain.sse.service.SseEmitterService;
 import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
@@ -41,15 +44,20 @@ public class DailyReportServiceImpl implements DailyReportService {
     private final QuizResultRepository quizResultRepository;
     private final OpenAiService openAiService;
     private final ReportConverter reportConverter;
-
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     public DailyReportResponseDto getDailyReport(Long userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         return reportRepository.findByUserAndTypeAndDate(user, EReportType.DAILY, date)
-                .map(reportConverter::toDailyAdviceListDto)
+                .map(this::getDailyReport)
                 .orElse(null);
+    }
+
+    @Override
+    public DailyReportResponseDto getDailyReport(Report report) {
+        return reportConverter.toDailyAdviceListDto(report);
     }
 
     @Override
@@ -83,6 +91,12 @@ public class DailyReportServiceImpl implements DailyReportService {
 
         report.addReportQuizScore(reportConverter.toReportQuizScoreList(report, results));
         report.addAdvice(advices);
+
+        List<User> childs = userRepository.findAllByParents_Id(user.getId());
+
+        for(User child : childs) {
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report, EReportType.DAILY, today);
+        }
     }
 
     @Override

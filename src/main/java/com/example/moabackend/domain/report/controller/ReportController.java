@@ -8,10 +8,7 @@ import com.example.moabackend.global.BaseResponse;
 import com.example.moabackend.global.annotation.UserId;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -20,6 +17,14 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReportController {
     private final ReportFacade reportFacade;
+
+    @GetMapping("/{reportId}")
+    public BaseResponse<Object> getReportById(
+            @UserId Long userId,
+            @PathVariable Long reportId
+    ) {
+        return BaseResponse.success(reportFacade.getReportById(userId, reportId));
+    }
 
     @GetMapping("/daily")
     public BaseResponse<DailyReportResponseDto> getReport(

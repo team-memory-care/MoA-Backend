@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
+import com.example.moabackend.domain.user.dto.req.FcmRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
@@ -65,11 +66,11 @@ public class UserController {
 
     @Operation(summary = "부모 자녀 최종 연결", description = "확인된 부모 ID를 사용하여 실제 연결을 완료하고 역할을 자녀(CHILD)로 확정합니다.")
     @PostMapping("/link-parent")
-    public BaseResponse<ChildUserResponseDto> linkParent(
+    public BaseResponse<Void> linkParent(
             @UserId Long userId,
             @RequestParam Long parentId) {
-        ChildUserResponseDto response = userService.linkParent(userId, parentId);
-        return BaseResponse.success(GlobalSuccessCode.SUCCESS, response);
+        userService.linkParent(userId, parentId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 
     // --- [사용자 정보 및 상태 관리] ---
@@ -116,6 +117,15 @@ public class UserController {
             @UserId Long userId,
             @PathVariable Long parentId) {
         userService.disconnectParent(userId, parentId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
+    }
+
+    @Operation(summary = "FCM 토큰 등록/업데이트", description = "푸시 알림 수신을 위한 FCM 토큰을 등록하거나 업데이트합니다.")
+    @PatchMapping("/fcm-token")
+    public BaseResponse<Void> updateFcmToken(
+            @UserId Long userId,
+            @RequestBody FcmRequestDto request) {
+        userService.updateFcmToken(userId, request.token());
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 

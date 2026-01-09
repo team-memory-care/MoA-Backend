@@ -43,6 +43,20 @@ public class UserServiceImpl implements UserService {
         return authService.generateSignUpAuthCode(phoneNumber);
     }
 
+    private static final java.util.regex.Pattern NON_DIGIT_PATTERN = java.util.regex.Pattern.compile("[^0-9]");
+    private static final String TEST_ACCOUNT_NUMBER = "821035477120";
+
+    private String resolveTestNumber(String phoneNumber) {
+        String clean = NON_DIGIT_PATTERN.matcher(phoneNumber).replaceAll("");
+
+        if (clean.equals("01035477120") ||
+                clean.equals("821035477120") ||
+                clean.equals("8201035477120")) {
+            return TEST_ACCOUNT_NUMBER;
+        }
+        return phoneNumber;
+    }
+
     /**
      * 2. 회원가입 완료 및 로그인
      */
@@ -53,7 +67,8 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
 
-        User existUser = userRepository.findByPhoneNumber(request.phoneNumber()).orElse(null);
+        String resolvedNumber = resolveTestNumber(request.phoneNumber());
+        User existUser = userRepository.findByPhoneNumber(resolvedNumber).orElse(null);
 
         if (existUser != null) {
             if (existUser.getStatus() == EUserStatus.WITHDRAWN) {
@@ -66,8 +81,7 @@ public class UserServiceImpl implements UserService {
             }
             throw new CustomException(UserErrorCode.USER_STATUS_INVALID);
         }
-        log.info("New user registration: {}", request.phoneNumber());
-        return createNewUser(request);
+        return createNewUser(request, resolvedNumber);
     }
 
     /**
@@ -106,7 +120,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public ChildUserResponseDto linkParent(Long userId, Long parentId) {
+    public void linkParent(Long userId, Long parentId) {
         User user = getUserOrThrow(userId);
         User parentUser = userRepository.findById(parentId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
@@ -121,8 +135,6 @@ public class UserServiceImpl implements UserService {
 
         user.addParent(parentUser);
         user.completeRoleSelection(ERole.CHILD, null);
-
-        return ChildUserResponseDto.from(user);
     }
 
     // --- [사용자 정보 및 상태 관리] ---
@@ -142,6 +154,13 @@ public class UserServiceImpl implements UserService {
         User parent = userRepository.findById(parentId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         return ChildUserResponseDto.LinkedParentResponseDto.from(parent);
+    }
+
+    @Override
+    @Transactional
+    public void updateFcmToken(Long userId, String fcmToken) {
+        User user = getUserOrThrow(userId);
+        user.updateFcmToken(fcmToken);
     }
 
     /**
@@ -235,13 +254,13 @@ public class UserServiceImpl implements UserService {
         return authService.generateTokensForUser(user);
     }
 
-    private JwtDTO createNewUser(UserRegisterRequestDto request) {
+    private JwtDTO createNewUser(UserRegisterRequestDto request, String resolvedNumber) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate parsed = LocalDate.parse(request.birthDate(), formatter);
 
         User user = User.builder()
                 .name(request.name())
-                .phoneNumber(request.phoneNumber())
+                .phoneNumber(resolvedNumber)
                 .role(ERole.PENDING)
                 .gender(request.gender())
                 .status(EUserStatus.ACTIVE)

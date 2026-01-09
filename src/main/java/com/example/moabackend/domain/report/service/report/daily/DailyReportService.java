@@ -12,6 +12,8 @@ import java.util.List;
 public interface DailyReportService {
     DailyReportResponseDto getDailyReport(Long userId, LocalDate date);
 
+    DailyReportResponseDto getDailyReport(Report report);
+
     void generateDailyReport(User user, LocalDate today);
 
     String createDailyPrompt(List<QuizResult> results);
