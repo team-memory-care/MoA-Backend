@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
+import com.example.moabackend.domain.user.dto.req.FcmRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
@@ -123,8 +124,8 @@ public class UserController {
     @PatchMapping("/fcm-token")
     public BaseResponse<Void> updateFcmToken(
             @UserId Long userId,
-            @RequestParam String fcmToken) {
-        userService.updateFcmToken(userId, fcmToken);
+            @RequestBody FcmRequestDto request) {
+        userService.updateFcmToken(userId, request.token());
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 
