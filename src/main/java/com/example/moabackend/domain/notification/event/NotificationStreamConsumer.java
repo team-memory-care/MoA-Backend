@@ -1,6 +1,6 @@
 package com.example.moabackend.domain.notification.event;
 
-import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
+import com.example.moabackend.domain.notification.dto.NotificationPayload;
 import com.example.moabackend.domain.sse.dto.EMessageType;
 import com.example.moabackend.domain.sse.service.SseEmitterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,8 +43,8 @@ public class NotificationStreamConsumer {
                     continue;
                 }
 
-                ReportMessagePayload payload =
-                        objectMapper.readValue(payloadRaw.toString(), ReportMessagePayload.class);
+                NotificationPayload payload =
+                        objectMapper.readValue(payloadRaw.toString(), NotificationPayload.class);
 
                 sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION, payload);
 
