@@ -23,12 +23,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Firebase Secret 파일 생성
-      - name: "🔥 Create Firebase Secret File"
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > src/main/resources/firebase-service-account.json
-
       # 3️⃣ Gradle 빌드
       - name: "🛠️ Build with Gradle"
         run: ./gradlew build -x test
@@ -67,6 +61,7 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
     # 6️⃣ EC2에 SSH 접속해서 배포
     steps:
       - name: Checkout
@@ -87,7 +82,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, BUCKET_NAME, OPENAI_API_KEY
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, BUCKET_NAME, OPENAI_API_KEY, FIREBASE_SERVICE_ACCOUNT
           script: |
             cd ~/deploy
             ./deploy.sh
