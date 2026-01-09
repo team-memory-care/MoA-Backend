@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.notification.event;
 
 import com.example.moabackend.domain.notification.dto.NotificationPayload;
+import com.example.moabackend.domain.report.entity.Report;
 import com.example.moabackend.domain.report.entity.type.EReportType;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
@@ -28,21 +29,21 @@ public class NotificationEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public void publishAfterCommit(User child, String parentName, Long reportId, EReportType reportType, LocalDate date) {
+    public void publishAfterCommit(User child, String parentName, Report report, EReportType reportType, LocalDate date) {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
-            publishNow(child, parentName, reportId, reportType, date);
+            publishNow(child, parentName, report, reportType, date);
             return;
         }
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                publishNow(child, parentName, reportId, reportType, date);
+                publishNow(child, parentName, report, reportType, date);
             }
         });
     }
 
-    private void publishNow(User child, String parentName, Long reportId, EReportType reportType, LocalDate date) {
+    private void publishNow(User child, String parentName, Report report, EReportType reportType, LocalDate date) {
         try {
 
             String json;
@@ -55,7 +56,7 @@ public class NotificationEventPublisher {
                                     EReportType.DAILY,
                                     setDailyTitle(date),
                                     setDailyBody(parentName),
-                                    reportId)
+                                    report.getId())
                     );
                 }
                 case WEEKLY -> {
@@ -65,7 +66,7 @@ public class NotificationEventPublisher {
                                     EReportType.WEEKLY,
                                     setWeeklyTitle(date),
                                     setWeeklyBody(parentName, date),
-                                    reportId
+                                    report.getId()
                             )
                     );
                 }
@@ -76,7 +77,7 @@ public class NotificationEventPublisher {
                                     EReportType.MONTHLY,
                                     setMonthlyTitle(date),
                                     setMonthlyBody(parentName, date),
-                                    reportId
+                                    report.getId()
                             )
                     );
                 }

@@ -1,8 +1,19 @@
 package com.example.moabackend.domain.notification.event;
 
-import com.example.moabackend.domain.report.dto.req.ReportMessagePayload;
+import com.example.moabackend.domain.notification.converter.NotificationConverter;
+import com.example.moabackend.domain.notification.dto.NotificationPayload;
+import com.example.moabackend.domain.notification.entity.Notification;
+import com.example.moabackend.domain.notification.repository.NotificationRepository;
+import com.example.moabackend.domain.notification.service.NotificationService;
+import com.example.moabackend.domain.report.entity.Report;
+import com.example.moabackend.domain.report.repository.ReportRepository;
 import com.example.moabackend.domain.sse.dto.EMessageType;
 import com.example.moabackend.domain.sse.service.SseEmitterService;
+import com.example.moabackend.domain.user.code.UserErrorCode;
+import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.domain.user.repository.UserRepository;
+import com.example.moabackend.global.code.GlobalErrorCode;
+import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +23,7 @@ import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
@@ -26,9 +38,10 @@ public class NotificationStreamRetryConsumer {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    private final SseEmitterService sseService;
+    private final NotificationService notificationService;
 
     @Scheduled(fixedDelay = 5000)
+    @Transactional
     public void retryPending() {
         PendingMessages pending =
                 redisTemplate.opsForStream().pending(
@@ -56,11 +69,11 @@ public class NotificationStreamRetryConsumer {
                 int retryCount = parseInt(msg.getValue().get(FIELD_RETRY), 0);
                 String payloadJson = String.valueOf(msg.getValue().get(FIELD_PAYLOAD));
 
-                ReportMessagePayload payload =
-                        objectMapper.readValue(payloadJson, ReportMessagePayload.class);
+                NotificationPayload payload =
+                        objectMapper.readValue(payloadJson, NotificationPayload.class);
 
                 try {
-                    sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION, payload);
+                    notificationService.processNotification(payload);
 
                     ack(msg);
                     log.info("Retry success. id={}", msg.getId());

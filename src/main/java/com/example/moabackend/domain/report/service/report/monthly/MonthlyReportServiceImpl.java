@@ -99,7 +99,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
         List<User> childs = userRepository.findAllByParents_Id(user.getId());
 
         for (User child : childs) {
-            notificationEventPublisher.publishAfterCommit(child, user.getName(), report.getId(), EReportType.MONTHLY, today);
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report, EReportType.MONTHLY, today);
         }
     }
 

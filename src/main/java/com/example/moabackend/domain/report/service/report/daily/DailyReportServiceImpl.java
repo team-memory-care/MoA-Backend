@@ -90,7 +90,7 @@ public class DailyReportServiceImpl implements DailyReportService {
         List<User> childs = userRepository.findAllByParents_Id(user.getId());
 
         for(User child : childs) {
-            notificationEventPublisher.publishAfterCommit(child, user.getName(), report.getId(), EReportType.DAILY, today);
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report, EReportType.DAILY, today);
         }
     }
 
