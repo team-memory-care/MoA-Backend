@@ -96,13 +96,10 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
 
         reportRepository.save(report);
 
-        List<Long> parentIds = userRepository.findAllByParents_Id(user.getId())
-                .stream()
-                .map(User::getId)
-                .toList();
+        List<User> childs = userRepository.findAllByParents_Id(user.getId());
 
-        for(Long userId : parentIds) {
-            notificationEventPublisher.publishAfterCommit(userId, report.getId(), EReportType.MONTHLY, today);
+        for (User child : childs) {
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report.getId(), EReportType.MONTHLY, today);
         }
     }
 
@@ -113,9 +110,6 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         LocalDate reportDate = LocalDate.of(year, month, 1);
-//        Report report = reportRepository.findByUserAndTypeAndDate(
-//                user, EReportType.MONTHLY, reportDate
-//        ).orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
 
         Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.MONTHLY, reportDate)
                 .orElse(null);

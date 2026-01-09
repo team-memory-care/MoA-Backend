@@ -103,13 +103,10 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
 
         reportRepository.save(report);
 
-        List<Long> parentIds = userRepository.findAllByParents_Id(user.getId())
-                .stream()
-                .map(User::getId)
-                .toList();
+        List<User> childs = userRepository.findAllByParents_Id(user.getId());
 
-        for(Long userId : parentIds) {
-            notificationEventPublisher.publishAfterCommit(userId, report.getId(), EReportType.WEEKLY, today);
+        for (User child : childs) {
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report.getId(), EReportType.WEEKLY, today);
         }
     }
 
