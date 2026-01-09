@@ -48,43 +48,7 @@ public class NotificationEventPublisher {
     private void publishNow(User child, String parentName, Report report, EReportType reportType, LocalDate date) {
         try {
 
-            String json;
-
-            switch (reportType) {
-                case DAILY -> {
-                    json = objectMapper.writeValueAsString(
-                            new NotificationPayload(
-                                    child.getId(),
-                                    EReportType.DAILY,
-                                    String.format(DAILY_REPORT_TITLE, parentName),
-                                    DAILY_REPORT_BODY,
-                                    report.getId())
-                    );
-                }
-                case WEEKLY -> {
-                    json = objectMapper.writeValueAsString(
-                            new NotificationPayload(
-                                    child.getId(),
-                                    EReportType.WEEKLY,
-                                    String.format(WEEKLY_REPORT_TITLE, parentName),
-                                    WEEKLY_REPORT_BODY,
-                                    report.getId()
-                            )
-                    );
-                }
-                case MONTHLY -> {
-                    json = objectMapper.writeValueAsString(
-                            new NotificationPayload(
-                                    child.getId(),
-                                    EReportType.MONTHLY,
-                                    String.format(MONTHLY_REPORT_TITLE, parentName),
-                                    MONTHLY_REPORT_BODY,
-                                    report.getId()
-                            )
-                    );
-                }
-                default -> throw new CustomException(NotificationErrorCode.NOTIFICATION_PUBLISH_ERROR);
-            }
+            String json = buildPayloadJson(child, parentName, report, reportType);
 
             redisTemplate.opsForStream().add(
                     StreamRecords.newRecord()
@@ -100,6 +64,35 @@ public class NotificationEventPublisher {
 
         } catch (Exception e) {
             log.error("Failed to publish notification event", e);
+        }
+    }
+
+    private String buildPayloadJson(User child, String parentName, Report report, EReportType reportType) {
+        try {
+            NotificationPayload payload = switch (reportType) {
+                case DAILY -> new NotificationPayload(
+                        child.getId(),
+                        EReportType.DAILY,
+                        String.format(DAILY_REPORT_TITLE, parentName),
+                        DAILY_REPORT_BODY,
+                        report.getId());
+                case WEEKLY -> new NotificationPayload(
+                        child.getId(),
+                        EReportType.WEEKLY,
+                        String.format(WEEKLY_REPORT_TITLE, parentName),
+                        WEEKLY_REPORT_BODY,
+                        report.getId());
+                case MONTHLY -> new NotificationPayload(
+                        child.getId(),
+                        EReportType.MONTHLY,
+                        String.format(MONTHLY_REPORT_TITLE, parentName),
+                        MONTHLY_REPORT_BODY,
+                        report.getId());
+            };
+
+            return objectMapper.writeValueAsString(payload);
+        } catch (Exception e) {
+            throw new CustomException(NotificationErrorCode.NOTIFICATION_PUBLISH_ERROR);
         }
     }
 }
