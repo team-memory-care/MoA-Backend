@@ -16,9 +16,9 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
-import java.time.temporal.WeekFields;
 import java.util.Map;
 
+import static com.example.moabackend.global.constant.Constants.*;
 import static com.example.moabackend.global.constant.RedisKey.*;
 
 @Slf4j
@@ -54,8 +54,8 @@ public class NotificationEventPublisher {
                             new NotificationPayload(
                                     child.getId(),
                                     EReportType.DAILY,
-                                    setDailyTitle(date),
-                                    setDailyBody(parentName),
+                                    String.format(DAILY_REPORT_TITLE, parentName),
+                                    DAILY_REPORT_BODY,
                                     report.getId())
                     );
                 }
@@ -64,8 +64,8 @@ public class NotificationEventPublisher {
                             new NotificationPayload(
                                     child.getId(),
                                     EReportType.WEEKLY,
-                                    setWeeklyTitle(date),
-                                    setWeeklyBody(parentName, date),
+                                    String.format(WEEKLY_REPORT_TITLE, parentName),
+                                    WEEKLY_REPORT_BODY,
                                     report.getId()
                             )
                     );
@@ -75,8 +75,8 @@ public class NotificationEventPublisher {
                             new NotificationPayload(
                                     child.getId(),
                                     EReportType.MONTHLY,
-                                    setMonthlyTitle(date),
-                                    setMonthlyBody(parentName, date),
+                                    String.format(MONTHLY_REPORT_TITLE, parentName),
+                                    MONTHLY_REPORT_BODY,
                                     report.getId()
                             )
                     );
@@ -99,29 +99,5 @@ public class NotificationEventPublisher {
         } catch (Exception e) {
             log.error("Failed to publish notification event", e);
         }
-    }
-
-    private String setDailyTitle(LocalDate date) {
-        return String.format("%d월 %d일 일간 리포트", date.getMonthValue(), date.getDayOfMonth());
-    }
-
-    private String setDailyBody(String name) {
-        return String.format("%s님의 오늘의 리포트를 확인해보세요", name);
-    }
-
-    private String setWeeklyTitle(LocalDate date) {
-        return String.format("%d월 %d주차 주간 리포트", date.getMonthValue(), date.get(WeekFields.ISO.weekOfMonth()));
-    }
-
-    private String setWeeklyBody(String parentName, LocalDate date) {
-        return String.format("%s님의 %d월 %d주차 리포트를 확인해보세요", parentName, date.getMonthValue(), date.get(WeekFields.ISO.weekOfMonth()));
-    }
-
-    private String setMonthlyTitle(LocalDate date) {
-        return String.format("%d년 %d월 월간 리포트", date.getYear(), date.getMonthValue());
-    }
-
-    private String setMonthlyBody(String parentName, LocalDate date) {
-        return String.format("%s님의 %d년 %d월 리포트를 확인해보세요", parentName, date.getYear(), date.getMonthValue());
     }
 }
