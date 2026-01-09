@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -30,6 +32,9 @@ public class Notification {
 
     @Column
     Boolean isRead = false;
+
+    @Column
+    LocalDateTime dateTime = LocalDateTime.now();
 
     @Builder
     public Notification(User user, Report report, String title, String body) {
