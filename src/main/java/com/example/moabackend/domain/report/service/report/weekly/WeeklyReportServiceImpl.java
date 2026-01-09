@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report.weekly;
 
+import com.example.moabackend.domain.notification.event.NotificationEventPublisher;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
@@ -44,6 +45,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
     private final QuizResultRepository quizResultRepository;
     private final OpenAiService openAiService;
     private final UserRepository userRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     @Transactional
@@ -100,6 +102,15 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
                 .build();
 
         reportRepository.save(report);
+
+        List<Long> parentIds = userRepository.findAllByParents_Id(user.getId())
+                .stream()
+                .map(User::getId)
+                .toList();
+
+        for(Long userId : parentIds) {
+            notificationEventPublisher.publishAfterCommit(userId, report.getId(), EReportType.WEEKLY, today);
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report.monthly;
 
+import com.example.moabackend.domain.notification.event.NotificationEventPublisher;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
@@ -42,6 +43,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
     private final QuizResultRepository quizResultRepository;
     private final OpenAiService openAiService;
     private final UserRepository userRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     @Transactional
@@ -93,6 +95,15 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                 .build();
 
         reportRepository.save(report);
+
+        List<Long> parentIds = userRepository.findAllByParents_Id(user.getId())
+                .stream()
+                .map(User::getId)
+                .toList();
+
+        for(Long userId : parentIds) {
+            notificationEventPublisher.publishAfterCommit(userId, report.getId(), EReportType.MONTHLY, today);
+        }
     }
 
     @Override
