@@ -23,6 +23,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # Firebase Secret 파일 생성
+      - name: "🔥 Create Firebase Secret File"
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > src/main/resources/firebase-service-account.json
+
       # 3️⃣ Gradle 빌드
       - name: "🛠️ Build with Gradle"
         run: ./gradlew build -x test
