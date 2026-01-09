@@ -144,6 +144,13 @@ public class UserServiceImpl implements UserService {
         return ChildUserResponseDto.LinkedParentResponseDto.from(parent);
     }
 
+    @Override
+    @Transactional
+    public void updateFcmToken(Long userId, String fcmToken) {
+        User user = getUserOrThrow(userId);
+        user.updateFcmToken(fcmToken);
+    }
+
     /**
      * 부모 코드 발급
      */

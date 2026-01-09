@@ -1,6 +1,7 @@
 package com.example.moabackend.domain.user.controller;
 
 import com.example.moabackend.domain.user.code.UserSuccessCode;
+import com.example.moabackend.domain.user.dto.req.FcmRequestDto;
 import com.example.moabackend.domain.user.dto.req.PhoneNumberRequestDto;
 import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.dto.res.ChildUserResponseDto;
@@ -116,6 +117,15 @@ public class UserController {
             @UserId Long userId,
             @PathVariable Long parentId) {
         userService.disconnectParent(userId, parentId);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
+    }
+
+    @Operation(summary = "FCM 토큰 등록/업데이트", description = "푸시 알림 수신을 위한 FCM 토큰을 등록하거나 업데이트합니다.")
+    @PatchMapping("/fcm-token")
+    public BaseResponse<Void> updateFcmToken(
+            @UserId Long userId,
+            @RequestBody FcmRequestDto request) {
+        userService.updateFcmToken(userId, request.token());
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 

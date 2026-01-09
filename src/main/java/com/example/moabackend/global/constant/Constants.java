@@ -31,4 +31,14 @@ public class Constants {
     );
 
     public static final String S3_URL_PREFIX = "https://moa-bucket-s3.s3.ap-northeast-2.amazonaws.com/";
+
+    // Notification Messages
+    public static final String DAILY_REPORT_TITLE = "%s님의 오늘 인지변화를 확인해보세요";
+    public static final String DAILY_REPORT_BODY = "오늘의 인지퀴즈 결과가 한눈에 보이도록 정리됐어요";
+
+    public static final String WEEKLY_REPORT_TITLE = "%s님의 이번 주 인지퀴즈 기록은 어땠을까요?";
+    public static final String WEEKLY_REPORT_BODY = "이번 주와 저번 주의 인지퀴즈 결과 차이를 확인해보세요";
+
+    public static final String MONTHLY_REPORT_TITLE = "%s님의 이번 달 인지변화를 확인해보세요";
+    public static final String MONTHLY_REPORT_BODY = "한 달간의 퀴즈 기록을 모아 전반적인 변화 흐름을 정리했어요";
 }

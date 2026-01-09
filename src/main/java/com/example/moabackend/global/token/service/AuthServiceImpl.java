@@ -176,6 +176,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public void logout(String accessToken, Long userId) {
         String jti = jwtUtil.getJti(accessToken);
         long expire = jwtUtil.getAccessTokenRemainingMillis(accessToken);
@@ -184,6 +185,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         refreshTokenService.deleteRefreshToken(userId);
+
+        userRepository.findById(userId).ifPresent(user -> user.updateFcmToken(null));
     }
 
     @Override

@@ -78,6 +78,11 @@ public interface UserService {
     List<ChildUserResponseDto.LinkedParentResponseDto> getMyParents(Long userId);
 
     /**
+     * FCM 토큰 업데이트
+     */
+    void updateFcmToken(Long userId, String fcmToken);
+
+    /**
      * 연결된 부모 삭제
      * 자녀 계정에서 특정 부모와의 연결을 해제합니다.
      */

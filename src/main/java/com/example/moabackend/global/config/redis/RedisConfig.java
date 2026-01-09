@@ -1,4 +1,4 @@
-package com.example.moabackend.global.config;
+package com.example.moabackend.global.config.redis;
 
 import io.lettuce.core.resource.ClientResources;
 import org.springframework.beans.factory.ObjectProvider;

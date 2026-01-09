@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.report.service.report.weekly;
 
+import com.example.moabackend.domain.notification.event.NotificationEventPublisher;
 import com.example.moabackend.domain.quiz.entity.QuizResult;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizResultRepository;
@@ -44,6 +45,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
     private final QuizResultRepository quizResultRepository;
     private final OpenAiService openAiService;
     private final UserRepository userRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     @Transactional
@@ -100,6 +102,12 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
                 .build();
 
         reportRepository.save(report);
+
+        List<User> childs = userRepository.findAllByParents_Id(user.getId());
+
+        for (User child : childs) {
+            notificationEventPublisher.publishAfterCommit(child, user.getName(), report, EReportType.WEEKLY, today);
+        }
     }
 
     @Override
@@ -112,7 +120,6 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
         LocalDate startOfWeek = LocalDate.of(year, month, 1)
                 .with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
                 .plusWeeks(week - 1);
-        LocalDate endOfWeek = startOfWeek.plusDays(6);
 
         Report report = reportRepository.findByUserAndTypeAndDate(user, EReportType.WEEKLY, startOfWeek)
                 .orElse(null);
@@ -121,17 +128,23 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
             return null;
         }
 
-        // 이번주 퀴즈 결과 조회
-        List<QuizResult> thisWeek = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), startOfWeek, endOfWeek);
+        return getWeeklyReport(report);
+    }
 
-        // 지난주 기간
+    @Override
+    @Transactional(readOnly = true)
+    public WeeklyReportResponseDto getWeeklyReport(Report report) {
+        LocalDate startOfWeek = report.getDate();
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        List<QuizResult> thisWeek = quizResultRepository.findAllByUserIdAndDateBetween(
+                report.getUser().getId(), startOfWeek, endOfWeek);
+
         LocalDate lastWeekStart = startOfWeek.minusWeeks(1);
         LocalDate lastWeekEnd = endOfWeek.minusWeeks(1);
 
-        // 지난주 퀴즈 결과 조회
         List<QuizResult> lastWeek = quizResultRepository.findAllByUserIdAndDateBetween(
-                user.getId(), lastWeekStart, lastWeekEnd);
+                report.getUser().getId(), lastWeekStart, lastWeekEnd);
 
         Map<EQuizType, List<WeeklyScoreDto>> scoreResult = buildWeeklyScoreResult(thisWeek, lastWeek, startOfWeek);
 
