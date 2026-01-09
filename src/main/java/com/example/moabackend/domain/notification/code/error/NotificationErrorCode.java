@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
 public enum NotificationErrorCode implements ErrorCode {
-    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.")
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+    NOTIFICATION_PUBLISH_ERROR(HttpStatus.NOT_FOUND, "존재하지 않는 리포트 타입입니다.")
     ;
 
     private final HttpStatus status;

@@ -1,10 +1,12 @@
 package com.example.moabackend.domain.notification.event;
 
+import com.example.moabackend.domain.notification.code.error.NotificationErrorCode;
 import com.example.moabackend.domain.notification.dto.NotificationPayload;
 import com.example.moabackend.domain.report.entity.Report;
 import com.example.moabackend.domain.report.entity.type.EReportType;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
+import com.example.moabackend.global.exception.CustomException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +83,7 @@ public class NotificationEventPublisher {
                             )
                     );
                 }
-                default -> json = null;
+                default -> throw new CustomException(NotificationErrorCode.NOTIFICATION_PUBLISH_ERROR);
             }
 
             redisTemplate.opsForStream().add(
