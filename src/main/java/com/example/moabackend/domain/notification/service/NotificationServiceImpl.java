@@ -1,5 +1,6 @@
 package com.example.moabackend.domain.notification.service;
 
+import com.example.moabackend.domain.notification.code.error.NotificationErrorCode;
 import com.example.moabackend.domain.notification.converter.NotificationConverter;
 import com.example.moabackend.domain.notification.dto.NotificationPayload;
 import com.example.moabackend.domain.notification.dto.res.NotificationResponseDto;
@@ -57,11 +58,24 @@ public class NotificationServiceImpl implements NotificationService {
                 notification
         );
 
-        sseService.sendToClient(payload.userId(), EMessageType.NOTIFICATION, NotificationConverter.payloadToDto(payload, notification.getDateTime()));
+        sseService.sendToClient(
+                payload.userId(),
+                EMessageType.NOTIFICATION,
+                NotificationConverter.payloadToDto(notification.getId(), payload, notification.getDateTime()));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int countIsNotReadNotification(Long userId) {
         return notificationRepository.findNotReadNotification(userId);
+    }
+
+    @Override
+    @Transactional
+    public void setNotificationToRead(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+
+        notification.setIsReadTrue();
     }
 }

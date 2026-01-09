@@ -11,4 +11,6 @@ public interface NotificationService {
     void processNotification(NotificationPayload payload);
 
     int countIsNotReadNotification(Long userId);
+
+    void setNotificationToRead(Long notificationId);
 }

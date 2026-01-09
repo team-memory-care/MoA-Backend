@@ -5,7 +5,6 @@ import com.example.moabackend.domain.notification.dto.res.NotificationResponseDt
 import com.example.moabackend.domain.notification.entity.Notification;
 import com.example.moabackend.global.util.TimeFormatter;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -15,16 +14,22 @@ import java.time.LocalDateTime;
 public class NotificationConverter {
     public static NotificationResponseDto entityToDto(Notification notification) {
         return new NotificationResponseDto(
+                notification.getId(),
                 notification.getTitle(),
                 notification.getBody(),
                 notification.getReport().getId(),
-                false,
+                notification.getIsRead(),
                 TimeFormatter.formatTimeAgo(notification.getDateTime())
         );
     }
 
-    public static NotificationResponseDto payloadToDto(NotificationPayload payload, LocalDateTime dateTime) {
+    public static NotificationResponseDto payloadToDto(
+            Long notificationId,
+            NotificationPayload payload,
+            LocalDateTime dateTime
+    ) {
         return new NotificationResponseDto(
+                notificationId,
                 payload.title(),
                 payload.body(),
                 payload.reportId(),
