@@ -1,6 +1,5 @@
 package com.example.moabackend.global.config;
 
-import com.example.moabackend.domain.notification.service.FcmService;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -10,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,15 +23,15 @@ public class FcmConfig {
     private String fcmCertification;
 
     @Bean
-    public FirebaseApp firebaseApp(FcmService fcmService) {
+    public FirebaseApp firebaseApp() {
         if (!FirebaseApp.getApps().isEmpty()) {
             return FirebaseApp.getInstance();
         }
 
         try {
-            if(fcmCertification == null | fcmCertification.isEmpty()) {
+            if (fcmCertification == null | fcmCertification.isEmpty()) {
                 log.warn("FCM Json이 비어있습니다.");
-                return null;
+                throw new CustomException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
             }
 
             InputStream serviceAccount = new ByteArrayInputStream(fcmCertification.getBytes(StandardCharsets.UTF_8));

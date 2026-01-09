@@ -74,4 +74,4 @@ logging:
     web: debug
 
 fcm:
-  certification: firebase-service-account.json
+  certification: ${FIREBASE_SERVICE_ACCOUNT}
