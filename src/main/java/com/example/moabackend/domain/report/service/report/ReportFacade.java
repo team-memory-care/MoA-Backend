@@ -31,9 +31,26 @@ public class ReportFacade {
     private final ReportRepository reportRepository;
 
     @Transactional(readOnly = true)
-    public Object getReportById(Long reportId) {
+    public Object getReportById(Long userId, Long reportId) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ReportErrorCode.REPORT_NOT_FOUND));
+
+        User reportOwner = report.getUser();
+
+        if (!reportOwner.getId().equals(userId)) {
+            boolean isParentOfOwner = reportOwner.getParents().stream()
+                    .anyMatch(user -> user.getId().equals(userId));
+
+            User viewer = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+            
+            boolean isChildOfOwner = viewer.getParents().stream()
+                    .anyMatch(user -> user.getId().equals(reportOwner.getId()));
+
+            if (!isParentOfOwner && !isChildOfOwner) {
+                throw new CustomException(GlobalErrorCode.INVALID_HEADER_VALUE);
+            }
+        }
 
         return switch (report.getType()) {
             case DAILY -> dailyReportService.getDailyReport(report);

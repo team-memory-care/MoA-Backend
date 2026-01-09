@@ -20,9 +20,10 @@ public class ReportController {
 
     @GetMapping("/{reportId}")
     public BaseResponse<Object> getReportById(
+            @UserId Long userId,
             @PathVariable Long reportId
     ) {
-        return BaseResponse.success(reportFacade.getReportById(reportId));
+        return BaseResponse.success(reportFacade.getReportById(userId, reportId));
     }
 
     @GetMapping("/daily")
