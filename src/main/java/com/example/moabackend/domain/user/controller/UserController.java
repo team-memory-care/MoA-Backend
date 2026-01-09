@@ -119,6 +119,15 @@ public class UserController {
         return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
     }
 
+    @Operation(summary = "FCM 토큰 등록/업데이트", description = "푸시 알림 수신을 위한 FCM 토큰을 등록하거나 업데이트합니다.")
+    @PatchMapping("/fcm-token")
+    public BaseResponse<Void> updateFcmToken(
+            @UserId Long userId,
+            @RequestParam String fcmToken) {
+        userService.updateFcmToken(userId, fcmToken);
+        return BaseResponse.success(GlobalSuccessCode.SUCCESS, null);
+    }
+
     @Operation(summary = "회원 탈퇴", description = "회원 정보를 삭제(비활성화)하고 토큰을 만료시킵니다.")
     @DeleteMapping("/withdraw")
     public BaseResponse<Void> withdraw(@UserId Long userId) {
