@@ -85,13 +85,14 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 역할 선택: 부모
+     * 역할 선택: 부모(역할 변경 가능)
      */
     @Override
     @Transactional
     public ParentUserResponseDto selectParentRole(Long userId) {
         User user = getUserOrThrow(userId);
-        validatePendingRole(user);
+
+        validateCanSelectParentRole(user);
 
         String codeToIssue = generateUniqueParentCode();
         user.completeRoleSelection(ERole.PARENT, codeToIssue);
@@ -277,9 +278,28 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
     }
 
-    private void validatePendingRole(User user) {
-        if (user.getRole() != ERole.PENDING) {
-            throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
+    private void validateCanSelectParentRole(User user) {
+        // 1. 관리자 권한 체크
+        if (user.getRole() == ERole.ADMIN) {
+            throw new CustomException(UserErrorCode.INVALID_USER);
+        }
+
+        // 2. 이미 보호자인 경우, 연결된 자녀가 있는지 확인
+        if (user.getRole() == ERole.PARENT) {
+            List<User> linkedChildren = userRepository.findAllByParents_Id(user.getId());
+            if (!linkedChildren.isEmpty()) {
+                log.warn("[Validation] User {} already has {} linked children. Re-selection denied.",
+                        user.getId(), linkedChildren.size());
+                throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
+            }
+        }
+
+        // 3. 자녀(CHILD) 역할인 경우 재선택 허용 여부
+        // 만약 자녀가 보호자로 바꾸고 싶다면, 먼저 연결된 부모 관계를 끊어야 함
+        if (user.getRole() == ERole.CHILD) {
+            if (user.getParents() != null && !user.getParents().isEmpty()) {
+                throw new CustomException(UserErrorCode.ALREADY_ROLE_SELECTED);
+            }
         }
     }
 }

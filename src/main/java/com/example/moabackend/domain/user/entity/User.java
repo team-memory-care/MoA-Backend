@@ -95,6 +95,19 @@ public class User {
 
     // 역할 선택 시 역할/부모코드 최종 확정
     public void completeRoleSelection(ERole newRole, String codeToIssue) {
+
+        // 자녀에서 보호자로 전환될 경우, 기존에 연결된 보호지와의 관계를 끊음
+        if (newRole == ERole.PARENT && this.role == ERole.CHILD) {
+            if (this.parents != null) {
+                this.parents.clear();
+            }
+        }
+
+        // 보호자에서 자녀로 전환될 경우, 기존 발급된 코드를 삭제
+        if (newRole == ERole.CHILD) {
+            this.parentCode = null;
+        }
+
         this.role = newRole;
         this.parentCode = codeToIssue;
     }
