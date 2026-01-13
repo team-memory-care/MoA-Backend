@@ -60,6 +60,6 @@ public class Notification {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 }
