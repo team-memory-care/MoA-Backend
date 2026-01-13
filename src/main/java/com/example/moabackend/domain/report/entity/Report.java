@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "report")
@@ -73,5 +74,17 @@ public class Report {
 
     public void addAdvice(List<Advice> advice) {
         this.advices.addAll(advice);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Report report)) return false;
+        return this.id != null && Objects.equals(this.id, report.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
