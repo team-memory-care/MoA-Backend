@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Getter
 @Entity
@@ -59,5 +60,17 @@ public class QuizResult {
 
     public void updateTotalNumber(int newTotalCount) {
         this.totalNumber = newTotalCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof QuizResult that)) return false;
+        return this.id != null && Objects.equals(this.id, that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

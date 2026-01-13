@@ -3,6 +3,7 @@ package com.example.moabackend.global.security.info;
 import com.example.moabackend.domain.user.dto.UserSecurityForm;
 import com.example.moabackend.domain.user.entity.type.ERole;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 @Builder
@@ -93,5 +95,17 @@ public class UserPrincipal implements UserDetails, OAuth2User {
     @Override
     public String getName() {
         return userId.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserPrincipal that)) return false;
+        return Objects.equals(userId, that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
     }
 }
