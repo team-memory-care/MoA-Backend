@@ -119,11 +119,23 @@ public class AuthServiceImpl implements AuthService {
      */
     public boolean verifyAuthCode(String phoneNumber, String inputCode) {
         String resolvedNumber = resolveTestNumber(phoneNumber);
+        String failCountKey = AUTH_CODE_PREFIX + resolvedNumber + ": fail";
         String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + resolvedNumber);
 
         if (savedCode != null && savedCode.equals(inputCode)) {
             stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
+            stringRedisTemplate.delete(failCountKey);
             return true;
+        }
+
+        // 틀렸을 경우, 실패 카운트 증가
+        if (savedCode != null) {
+            Long count = stringRedisTemplate.opsForValue().increment(failCountKey);
+            if (count != null && count >= 5) {
+                stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
+                stringRedisTemplate.delete(failCountKey);
+                throw new CustomException(UserErrorCode.AUTH_CODE_EXPIRED);
+            }
         }
         return false;
     }
