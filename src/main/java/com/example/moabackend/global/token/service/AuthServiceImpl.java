@@ -13,6 +13,7 @@ import com.example.moabackend.global.security.utils.JwtUtil;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String generateSignUpAuthCode(String phoneNumber) {
         String resolvedNumber = resolveTestNumber(phoneNumber);
+        String failCountKey = AUTH_CODE_PREFIX + resolvedNumber + ": fail";
         String code;
         // 1. 4자리 인증 코드 생성
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
@@ -71,6 +73,8 @@ public class AuthServiceImpl implements AuthService {
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
         }
+
+        stringRedisTemplate.delete(failCountKey);
 
         // 2. Redis에 코드 저장 (키 통일)
         stringRedisTemplate.opsForValue()
@@ -119,11 +123,24 @@ public class AuthServiceImpl implements AuthService {
      */
     public boolean verifyAuthCode(String phoneNumber, String inputCode) {
         String resolvedNumber = resolveTestNumber(phoneNumber);
+        String failCountKey = AUTH_CODE_PREFIX + resolvedNumber + ": fail";
         String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + resolvedNumber);
 
         if (savedCode != null && savedCode.equals(inputCode)) {
             stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
+            stringRedisTemplate.delete(failCountKey);
             return true;
+        }
+
+        // 틀렸을 경우, 실패 카운트 증가
+        if (savedCode != null) {
+            Long count = stringRedisTemplate.opsForValue().increment(failCountKey);
+            stringRedisTemplate.expire(failCountKey, CODE_TTL_SECONDS, TimeUnit.SECONDS);
+            if (count != null && count >= 5) {
+                stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
+                stringRedisTemplate.delete(failCountKey);
+                throw new CustomException(UserErrorCode.AUTH_CODE_EXPIRED);
+            }
         }
         return false;
     }
@@ -138,8 +155,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhoneNumber(resolvedNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        // 테스트 계정 프리패스
+        // 테스트 계정 프리패스: 0911인 경우에만 통과
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+            if (!"0911".equals(authCode)) {
+                throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
+            }
         } else if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }

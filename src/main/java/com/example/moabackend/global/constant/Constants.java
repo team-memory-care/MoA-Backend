@@ -25,9 +25,7 @@ public class Constants {
             // [3] 인증 관련 (로그인, 재발급 등은 내부에서 검증하거나 토큰 없이 호출됨)
             "/api/v1/auth/token/reissue",
             "/api/v1/auth/sms/request",
-            "/api/v1/auth/login",
-
-            "/api/v1/s3/upload"
+            "/api/v1/auth/login"
     );
 
     public static final String S3_URL_PREFIX = "https://moa-bucket-s3.s3.ap-northeast-2.amazonaws.com/";
