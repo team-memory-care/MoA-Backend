@@ -138,8 +138,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhoneNumber(resolvedNumber)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_FOUND_USER));
 
-        // 테스트 계정 프리패스
+        // 테스트 계정 프리패스: 0911인 경우에만 통과
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+            if (!"0911".equals(authCode)) {
+                throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
+            }
         } else if (!verifyAuthCode(phoneNumber, authCode)) {
             throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
         }
