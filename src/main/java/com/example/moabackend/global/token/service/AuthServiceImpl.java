@@ -13,6 +13,7 @@ import com.example.moabackend.global.security.utils.JwtUtil;
 import com.example.moabackend.global.token.dto.req.ReissueTokenRequestDto;
 import com.example.moabackend.global.token.dto.res.ReissueTokenResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String generateSignUpAuthCode(String phoneNumber) {
         String resolvedNumber = resolveTestNumber(phoneNumber);
+        String failCountKey = AUTH_CODE_PREFIX + resolvedNumber + ": fail";
         String code;
         // 1. 4자리 인증 코드 생성
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
@@ -71,6 +73,8 @@ public class AuthServiceImpl implements AuthService {
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
         }
+
+        stringRedisTemplate.delete(failCountKey);
 
         // 2. Redis에 코드 저장 (키 통일)
         stringRedisTemplate.opsForValue()
@@ -131,6 +135,7 @@ public class AuthServiceImpl implements AuthService {
         // 틀렸을 경우, 실패 카운트 증가
         if (savedCode != null) {
             Long count = stringRedisTemplate.opsForValue().increment(failCountKey);
+            stringRedisTemplate.expire(failCountKey, CODE_TTL_SECONDS, TimeUnit.SECONDS);
             if (count != null && count >= 5) {
                 stringRedisTemplate.delete(AUTH_CODE_PREFIX + resolvedNumber);
                 stringRedisTemplate.delete(failCountKey);
