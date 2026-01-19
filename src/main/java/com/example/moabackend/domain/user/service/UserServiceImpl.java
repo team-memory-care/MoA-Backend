@@ -52,6 +52,7 @@ public class UserServiceImpl implements UserService {
 
     private static final java.util.regex.Pattern NON_DIGIT_PATTERN = java.util.regex.Pattern.compile("[^0-9]");
     private static final String TEST_ACCOUNT_NUMBER = "821035477120";
+    private static final String TEST_SIGNUP_NUMBER = "821012345678";
 
     private String resolveTestNumber(String phoneNumber) {
         String clean = NON_DIGIT_PATTERN.matcher(phoneNumber).replaceAll("");
@@ -61,6 +62,13 @@ public class UserServiceImpl implements UserService {
                 clean.equals("8201035477120")) {
             return TEST_ACCOUNT_NUMBER;
         }
+
+        if (clean.equals("01012345678") ||
+                clean.equals("821012345678") ||
+                clean.equals("8201012345678")) {
+            return TEST_SIGNUP_NUMBER;
+        }
+
         return phoneNumber;
     }
 
