@@ -32,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private static final long CODE_TTL_SECONDS = 300;
     private static final String AUTH_CODE_PREFIX = "auth:";
     private static final String TEST_ACCOUNT_NUMBER = "821035477120";
+    private static final String TEST_SIGNUP_NUMBER = "821012345678";
     private static final Pattern NON_DIGIT_PATTERN = Pattern.compile("[^0-9]");
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
@@ -56,6 +57,13 @@ public class AuthServiceImpl implements AuthService {
                 clean.equals("8201035477120")) {
             return TEST_ACCOUNT_NUMBER;
         }
+
+        if (clean.equals("01012345678") ||
+                clean.equals("821012345678") ||
+                clean.equals("8201012345678")) {
+            return TEST_SIGNUP_NUMBER;
+        }
+
         return phoneNumber;
     }
 
@@ -70,6 +78,8 @@ public class AuthServiceImpl implements AuthService {
         // 1. 4자리 인증 코드 생성
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             code = "0911";
+        } else if (TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
+            code = "1234";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
         }
@@ -81,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
                 .set(AUTH_CODE_PREFIX + resolvedNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber) && !TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -93,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String generateAuthCode(String phoneNumber) {
         String resolvedNumber = resolveTestNumber(phoneNumber);
-        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber) && !TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
             if (!userRepository.existsByPhoneNumber(phoneNumber)) {
                 throw new CustomException(GlobalErrorCode.NOT_FOUND_USER);
             }
@@ -103,6 +113,8 @@ public class AuthServiceImpl implements AuthService {
         // 1. 4자리 인증 코드 생성
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             code = "0911";
+        } else if (TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
+            code = "1234";
         } else {
             code = String.format("%04d", secureRandom.nextInt(10000));
         }
@@ -112,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
                 .set(AUTH_CODE_PREFIX + resolvedNumber, code, CODE_TTL_SECONDS, TimeUnit.SECONDS);
 
         // 3. CoolSMS 발송
-        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
+        if (!TEST_ACCOUNT_NUMBER.equals(resolvedNumber) && !TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
             coolSmsService.sendVerificationSms(phoneNumber, code);
         }
         return "인증 코드가 발송되었습니다.";
@@ -158,6 +170,10 @@ public class AuthServiceImpl implements AuthService {
         // 테스트 계정 프리패스: 0911인 경우에만 통과
         if (TEST_ACCOUNT_NUMBER.equals(resolvedNumber)) {
             if (!"0911".equals(authCode)) {
+                throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
+            }
+        } else if (TEST_SIGNUP_NUMBER.equals(resolvedNumber)) {
+            if (!"1234".equals(authCode)) {
                 throw new CustomException(UserErrorCode.INVALID_AUTH_CODE);
             }
         } else if (!verifyAuthCode(phoneNumber, authCode)) {

@@ -12,6 +12,7 @@ public enum UserErrorCode implements ErrorCode {
     ALREADY_ROLE_SELECTED(HttpStatus.CONFLICT, "이미 역할을 선택했습니다."),
     USER_STATUS_INVALID(HttpStatus.FORBIDDEN, "로그인이 불가능한 상태의 계정입니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "부모/자녀 외의 역할을 선택했습니다."),
+    USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가입된 유저입니다."),
     INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않거나 만료되었습니다."),
     AUTH_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호가 만료되었습니다."),
     INVALID_PARENT_CODE(HttpStatus.BAD_REQUEST, "입력된 부모 회원 코드를 가진 사용자가 존재하지 않습니다."),

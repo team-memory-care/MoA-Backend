@@ -52,7 +52,9 @@ public class QuizResultServiceImpl implements QuizResultService {
         boolean isCorrect = isAnswerCorrect(question, requestDto.userAnswer());
         int correctCount = isCorrect ? 1 : 0;
 
-        QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType(), EQuizCategory.TODAY);
+        LocalDate date = requestDto.date() != null ? requestDto.date() : LocalDate.now();
+
+        QuizSaveRequestDto saveRequest = new QuizSaveRequestDto(1, correctCount, question.getType(), EQuizCategory.TODAY, date);
 
         saveQuizResult(userId, saveRequest);
 
@@ -74,7 +76,9 @@ public class QuizResultServiceImpl implements QuizResultService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeAndCategoryLocked(userId, LocalDate.now(), quizSaveRequestDto.type(),
+        LocalDate date = quizSaveRequestDto.date();
+
+        Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeAndCategoryLocked(userId, date, quizSaveRequestDto.type(),
                 quizSaveRequestDto.category());
 
         if (quiz.isPresent()) {
@@ -88,9 +92,9 @@ public class QuizResultServiceImpl implements QuizResultService {
             }
         }
 
-        updateAllTypeResultByCategory(user, LocalDate.now(), quizSaveRequestDto.category());
+        updateAllTypeResultByCategory(user, date, quizSaveRequestDto.category());
 
-        if (hasCompletedAllQuiz(userId, LocalDate.now())) {
+        if (hasCompletedAllQuiz(userId, date)) {
             reportEventProducer.publishReportEvent(userId, EReportType.DAILY);
         }
     }

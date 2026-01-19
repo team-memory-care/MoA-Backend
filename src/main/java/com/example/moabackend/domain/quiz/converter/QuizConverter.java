@@ -55,7 +55,7 @@ public class QuizConverter {
                 .user(user)
                 .totalNumber(dto.totalNumber())
                 .correctNumber(dto.correctNumber())
-                .date(LocalDate.now())
+                .date(dto.date())
                 .type(dto.type())
                 .category(dto.category())
                 .build();
