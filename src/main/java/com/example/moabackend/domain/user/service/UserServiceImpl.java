@@ -40,6 +40,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String requestSignUpSms(String phoneNumber) {
+        String resolvedNumber = resolveTestNumber(phoneNumber);
+        User existUser = userRepository.findByPhoneNumber(resolvedNumber).orElse(null);
+
+        if (existUser != null && existUser.getStatus() == EUserStatus.ACTIVE) {
+            throw new CustomException(UserErrorCode.USER_ALREADY_EXISTS);
+        }
+
         return authService.generateSignUpAuthCode(phoneNumber);
     }
 
