@@ -23,7 +23,7 @@
 >
 > ***Donghyun Kim*** [@bricksky](https://github.com/bricksky, "깃허브")
 >
-> ***Seonhwan Kim*** [@SeonHwan-Kim[(https://github.com/SeonHwan-Kim, "깃허브")
+> ***Seonhwan Kim*** [@SeonHwan-Kim](https://github.com/SeonHwan-Kim, "깃허브")
 
 
 ***Contact***
