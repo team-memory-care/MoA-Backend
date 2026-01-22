@@ -1,7 +1,9 @@
 package com.example.moabackend.domain.user.service;
 
 import com.example.moabackend.domain.user.code.UserErrorCode;
+import com.example.moabackend.domain.user.dto.req.UserRegisterRequestDto;
 import com.example.moabackend.domain.user.entity.User;
+import com.example.moabackend.domain.user.entity.type.EUserGender;
 import com.example.moabackend.domain.user.entity.type.EUserStatus;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
@@ -69,4 +71,29 @@ public class UserServiceImplTest {
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_ALREADY_EXISTS);
     }
+
+    @Test
+    @DisplayName("회원가입 완료 - 인증 번호가 일치하지 않으면 예외 발생")
+    void confirmSignUpAndLogin_InvalidAuthCode_ThrowsException() {
+        // [Given]
+        UserRegisterRequestDto request = createRegisterRequest("01012345678", "wrong-code");
+        // 인증 서비스가 false를 반환하도록 설정
+        given(authService.verifyAuthCode(anyString(), anyString())).willReturn(false);
+
+        // [When & Then]
+        assertThatThrownBy(() -> userService.confirmSignUpAndLogin(request))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.INVALID_AUTH_CODE);
+    }
+
+    private UserRegisterRequestDto createRegisterRequest(String phoneNumber, String authCode) {
+        return new UserRegisterRequestDto(
+                "테스터",
+                "19950320",
+                phoneNumber,
+                EUserGender.MALE,
+                authCode
+        );
+    }
 }
+
