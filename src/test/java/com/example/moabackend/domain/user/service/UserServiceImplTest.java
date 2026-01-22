@@ -110,6 +110,29 @@ public class UserServiceImplTest {
         verify(userRepository, times(1)).save(any(User.class));
     }
 
+    @Test
+    @DisplayName("회원가입 완료 - 탈퇴한 유저일 경우 기존 정보를 활성화(ACTIVE)하고 토큰을 반환한다")
+    void confirmSignUpAndLogin_WithdrawnUser_Success() {
+        // given: 상황 준비
+        UserRegisterRequestDto request = createRegisterRequest("01012345678", "123456");
+        User withdrawnUser = User.builder()
+                .status(EUserStatus.WITHDRAWN)
+                .build();
+        JwtDTO expectedTokens = JwtDTO.builder().accessToken("re-access-token").build();
+
+        given(authService.verifyAuthCode(anyString(), anyString())).willReturn(true);
+        given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(withdrawnUser));
+        given(authService.generateTokensForUser(any(User.class))).willReturn(expectedTokens);
+
+        // when: 로직 실행
+        JwtDTO result = userService.confirmSignUpAndLogin(request);
+
+        // then: 결과 검증
+        assertThat(result.accessToken()).isEqualTo("re-access-token");
+        assertThat(withdrawnUser.getStatus()).isEqualTo(EUserStatus.ACTIVE);
+        verify(userRepository, times(0)).save(any(User.class));
+    }
+
     private UserRegisterRequestDto createRegisterRequest(String phoneNumber, String authCode) {
         return new UserRegisterRequestDto(
                 "테스터",
