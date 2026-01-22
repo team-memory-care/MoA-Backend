@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
+
     @Mock
     private UserRepository userRepository;
 
@@ -37,28 +38,27 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    @Test
-    @DisplayName("회원가입 SMS 요청 - 신규 번호일때 성공")
-    void requestSignUpSms_NewUser_Success() {
+    // --- [Scenario: Onboarding - SMS Request] ---
 
-        // given: 상황 준비
+    @Test
+    @DisplayName("회원가입 SMS 요청: 신규 번호인 경우 인증 코드 발송")
+    void requestSignUpSms_NewUser_Success() {
+        // [Logic] 중복 가입 여부 확인 후 신규 유저 대상 인증 코드 생성
         String phoneNumber = "01012345678";
         String expectedAuthCode = "123456";
 
         given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.empty());
         given(authService.generateSignUpAuthCode(phoneNumber)).willReturn(expectedAuthCode);
 
-        // when: 로직 실행
         String result = userService.requestSignUpSms(phoneNumber);
 
-        // then: 결과 검증
         assertThat(result).isEqualTo(expectedAuthCode);
     }
 
     @Test
-    @DisplayName("회원가입 SMS 요청 - 이미 활성화된 유저일 때 에러 발생")
+    @DisplayName("회원가입 SMS 요청: 이미 ACTIVE 상태인 유저의 중복 가입 시도 차단")
     void requestSignUpSms_AlreadyExists_ThrowsException() {
-        // given: 상황 준비
+        // [Validation] 활성 유저(ACTIVE) 존재 시 USER_ALREADY_EXISTS 예외 반환
         String phoneNumber = "01035477120";
         String resolvedNumber = "821035477120";
 
@@ -69,78 +69,67 @@ public class UserServiceImplTest {
 
         given(userRepository.findByPhoneNumber(resolvedNumber)).willReturn(Optional.of(existingUser));
 
-        // when: 로직 실행 & then: 결과 검증
         assertThatThrownBy(() -> userService.requestSignUpSms(phoneNumber))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_ALREADY_EXISTS);
     }
 
+    // --- [Scenario: Onboarding - Verification & Signup] ---
+
     @Test
-    @DisplayName("회원가입 완료 - 인증 번호가 일치하지 않으면 예외 발생")
+    @DisplayName("회원가입 완료: 인증 코드 불일치 시 INVALID_AUTH_CODE 예외 반환")
     void confirmSignUpAndLogin_InvalidAuthCode_ThrowsException() {
-        // given: 상황 준비
+        // [Security] 제출된 인증 코드가 Redis 저장값과 다른 경우
         UserRegisterRequestDto request = createRegisterRequest("01012345678", "wrong-code");
-        // 인증 서비스가 false를 반환하도록 설정
         given(authService.verifyAuthCode(anyString(), anyString())).willReturn(false);
 
-        // when: 로직 실행 & then: 결과 검증
         assertThatThrownBy(() -> userService.confirmSignUpAndLogin(request))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.INVALID_AUTH_CODE);
     }
 
     @Test
-    @DisplayName("회원가입 완료 - 신규 유저일 경우 DB 저장 후 토큰을 반환한다")
+    @DisplayName("회원가입 완료: 신규 유저 - 계정 생성 및 영속화 후 토큰 발급")
     void confirmSignUpAndLogin_NewUser_Success() {
-        // given: 상황 준비
+        // [Flow] 인증 성공 -> 유저 정보 저장 -> JWT 발급 시나리오
         UserRegisterRequestDto request = createRegisterRequest("01012345678", "123456");
         JwtDTO expectedTokens = JwtDTO.builder().accessToken("access-token").build();
 
         given(authService.verifyAuthCode(anyString(), anyString())).willReturn(true);
         given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.empty());
-
         given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(authService.generateTokensForUser(any(User.class))).willReturn(expectedTokens);
 
-        // when: 로직 실행
         JwtDTO result = userService.confirmSignUpAndLogin(request);
 
-        // then: 결과 검증
         assertThat(result.accessToken()).isEqualTo("access-token");
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(any(User.class)); // 영속화 호출 여부 검증
     }
 
     @Test
-    @DisplayName("회원가입 완료 - 탈퇴한 유저일 경우 기존 정보를 활성화(ACTIVE)하고 토큰을 반환한다")
+    @DisplayName("회원가입 완료: 탈퇴 유저 - 기존 정보 활성화(Dirty Checking) 및 토큰 발급")
     void confirmSignUpAndLogin_WithdrawnUser_Success() {
-        // given: 상황 준비
+        // [Business Rule] WITHDRAWN 유저는 신규 생성 없이 기존 레코드 재활용(ACTIVE 전환)
         UserRegisterRequestDto request = createRegisterRequest("01012345678", "123456");
-        User withdrawnUser = User.builder()
-                .status(EUserStatus.WITHDRAWN)
-                .build();
+        User withdrawnUser = User.builder().status(EUserStatus.WITHDRAWN).build();
         JwtDTO expectedTokens = JwtDTO.builder().accessToken("re-access-token").build();
 
         given(authService.verifyAuthCode(anyString(), anyString())).willReturn(true);
         given(userRepository.findByPhoneNumber(anyString())).willReturn(Optional.of(withdrawnUser));
         given(authService.generateTokensForUser(any(User.class))).willReturn(expectedTokens);
 
-        // when: 로직 실행
         JwtDTO result = userService.confirmSignUpAndLogin(request);
 
-        // then: 결과 검증
         assertThat(result.accessToken()).isEqualTo("re-access-token");
-        assertThat(withdrawnUser.getStatus()).isEqualTo(EUserStatus.ACTIVE);
-        verify(userRepository, times(0)).save(any(User.class));
+        assertThat(withdrawnUser.getStatus()).isEqualTo(EUserStatus.ACTIVE); // 상태값 변경 확인
+        verify(userRepository, times(0)).save(any(User.class)); // 불필요한 Insert 방지 검증
     }
+
+    // --- [Test Data Factory] ---
 
     private UserRegisterRequestDto createRegisterRequest(String phoneNumber, String authCode) {
         return new UserRegisterRequestDto(
-                "테스터",
-                "19950320",
-                phoneNumber,
-                EUserGender.MALE,
-                authCode
+                "테스터", "19950320", phoneNumber, EUserGender.MALE, authCode
         );
     }
 }
-
