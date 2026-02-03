@@ -1,5 +1,7 @@
 package com.example.moabackend.domain.image.service;
 
+import com.example.moabackend.domain.image.entity.MoaImage;
+import com.example.moabackend.domain.image.repository.ImageRepository;
 import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
@@ -23,24 +26,36 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ImageServiceImpl implements ImageService {
 
-    private final S3Client s3Client;
+    private final ImageRepository imageRepository;
     private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
 
-    @Value("${aws.s3.bucket-name}")
-    private String bucketName;
-
-    // [public 메서드] 외부에서 사용, S3에 저장된 이미지 객체의 public url을 반환
-    public List<String> upload(List<MultipartFile> files) {
+    //  이미지를 DB에 저장하고, 저장된 ID 리스트를 반환
+    @Override
+    @Transactional
+    public List<Long> upload(List<MultipartFile> files) {
         return files.stream()
-                .map(this::uploadImage)
+                .map(this::uploadImageToDb)
                 .toList();
     }
 
-    //validateFile메서드를 호출하여 유효성 검증 후 uploadImageToS3메서드에 데이터를 반환하여 S3에 파일 업로드,
-    // public url을 받아 서비스 로직에 반환
-    private String uploadImage(MultipartFile file) {
+    // 내부 로직: 검증 -> 변환 -> DB 저장 -> ID 반환
+    private Long uploadImageToDb(MultipartFile file) {
+        // 1. 유효성 검증 유지
         validateFile(file.getOriginalFilename());
-        return uploadImageToS3(file);
+
+        // 2. DB 저장 수행
+        try {
+            MoaImage moaImage = MoaImage.builder()
+                    .originalFileName(file.getOriginalFilename())
+                    .contentType(file.getContentType())
+                    .imageData(file.getBytes())
+                    .build();
+
+            MoaImage savedImage = imageRepository.save(moaImage);
+            return savedImage.getId();
+        } catch (IOException e) {
+            throw new CustomException(GlobalErrorCode.IO_EXCEPTION_UPLOAD_FILE);
+        }
     }
 
     // 파일 유효성 검증
@@ -62,31 +77,5 @@ public class ImageServiceImpl implements ImageService {
         if (extension == null || !ALLOWED_EXTENSIONS.contains(extension)) {
             throw new CustomException(GlobalErrorCode.INVALID_FILE_EXTENSION);
         }
-    }
-
-    // 직접 S3에 업로드
-    private String uploadImageToS3(MultipartFile file) {
-        // 원본 파일 명
-        String originalFileName = file.getOriginalFilename();
-        // 변경된 파일
-        String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFileName;
-
-        // 이미지 파일 -> InputStream 변환
-        try (InputStream inputStream = file.getInputStream()) {
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(s3FileName)
-                    .acl(ObjectCannedACL.PUBLIC_READ)
-                    .contentType(file.getContentType())
-                    .contentLength(file.getSize())
-                    .build();
-
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()
-            ));
-        } catch (Exception exception) {
-            log.error(exception.getMessage(), exception);
-            throw new CustomException(GlobalErrorCode.IO_EXCEPTION_UPLOAD_FILE);
-        }
-        return s3FileName;
     }
 }
