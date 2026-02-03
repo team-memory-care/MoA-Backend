@@ -42,6 +42,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/users/my-parents/**").hasRole("CHILD")
                                 .requestMatchers("/api/v1/users/role/child").hasAnyRole("PENDING", "CHILD", "PARENT", "ADMIN") //
 
+                                .requestMatchers("/api/v1/images/**").permitAll()
+
                                 .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

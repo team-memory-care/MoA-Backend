@@ -21,7 +21,7 @@ public class MoaImage {
     private String contentType;
 
     @Lob
-    @Column(columnDefinition = "BLOB")
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] imageData;
 
     @Builder

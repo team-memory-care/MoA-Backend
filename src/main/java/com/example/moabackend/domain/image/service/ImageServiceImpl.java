@@ -6,19 +6,12 @@ import com.example.moabackend.global.code.GlobalErrorCode;
 import com.example.moabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -77,5 +70,11 @@ public class ImageServiceImpl implements ImageService {
         if (extension == null || !ALLOWED_EXTENSIONS.contains(extension)) {
             throw new CustomException(GlobalErrorCode.INVALID_FILE_EXTENSION);
         }
+    }
+
+    @Override
+    public MoaImage findImage(Long id) {
+        return imageRepository.findById(id)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.NOT_EXIST_FILE));
     }
 }
