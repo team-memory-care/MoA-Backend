@@ -52,13 +52,6 @@ jwt:
 server:
   domain: ${DOMAIN_NAME}
 
-aws:
-  s3:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
-    bucket-name: ${BUCKET_NAME}
-  region: ${AWS_REGION}
-
 coolsms:
   api:
     key: ${COOLSMS_API_KEY}
