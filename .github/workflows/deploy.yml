@@ -56,13 +56,9 @@ jobs:
       COOLSMS_API_KEY: ${{ secrets.COOLSMS_API_KEY }}
       COOLSMS_API_SECRET: ${{ secrets.COOLSMS_API_SECRET }}
       COOLSMS_API_SENDER_NUMBER: ${{ secrets.COOLSMS_API_SENDER_NUMBER }}
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-    # 6️⃣ EC2에 SSH 접속해서 배포
+    # 6️⃣ OCI에 SSH 접속해서 배포
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -70,19 +66,19 @@ jobs:
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.OCI_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ secrets.OCI_SSH_KEY }}
           source: "docker-compose.yml"
           target: "~/deploy/"
 
-      - name: "🚀 Deploy to EC2"
+      - name: "🚀 Deploy to OCI"
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.OCI_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, BUCKET_NAME, OPENAI_API_KEY, FIREBASE_SERVICE_ACCOUNT
+          key: ${{ secrets.OCI_SSH_KEY }}
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, DOMAIN_NAME, JWT_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION, COOLSMS_API_KEY, COOLSMS_API_SECRET, COOLSMS_API_SENDER_NUMBER, OPENAI_API_KEY, FIREBASE_SERVICE_ACCOUNT
           script: |
             cd ~/deploy
             ./deploy.sh
