@@ -50,12 +50,12 @@ public class QuizConverter {
     /**
      * 퀴즈 결과를 저장하기 위해 DTO를 QuizResult 엔티티로 변환합니다.
      */
-    public QuizResult toEntity(User user, QuizSaveRequestDto dto) {
+    public QuizResult toEntity(User user, QuizSaveRequestDto dto, LocalDate date) {
         return QuizResult.builder()
                 .user(user)
                 .totalNumber(dto.totalNumber())
                 .correctNumber(dto.correctNumber())
-                .date(dto.date())
+                .date(date)
                 .type(dto.type())
                 .category(dto.category())
                 .build();
