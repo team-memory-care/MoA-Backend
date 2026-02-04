@@ -34,12 +34,12 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 public class QuizResultServiceImpl implements QuizResultService {
+    private static final Pattern CLEANUP_PATTERN = Pattern.compile("[\\s,]");
     private final QuizResultRepository quizResultRepository;
     private final UserRepository userRepository;
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ReportEventProducer reportEventProducer;
-    private static final Pattern CLEANUP_PATTERN = Pattern.compile("[\\s,]");
 
     @Override
     @Transactional
@@ -76,7 +76,7 @@ public class QuizResultServiceImpl implements QuizResultService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        LocalDate date = quizSaveRequestDto.date();
+        LocalDate date = quizSaveRequestDto.date() != null ? quizSaveRequestDto.date() : LocalDate.now();
 
         Optional<QuizResult> quiz = quizResultRepository.findByUserIdAndDateAndTypeAndCategoryLocked(userId, date, quizSaveRequestDto.type(),
                 quizSaveRequestDto.category());
@@ -86,7 +86,7 @@ public class QuizResultServiceImpl implements QuizResultService {
             quiz.get().updateTotalNumber(quizSaveRequestDto.totalNumber());
         } else {
             try {
-                quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto));
+                quizResultRepository.save(quizConverter.toEntity(user, quizSaveRequestDto, date));
             } catch (DataIntegrityViolationException e) {
                 throw new CustomException(QuizErrorCode.ALREADY_SUBMITTED);
             }
