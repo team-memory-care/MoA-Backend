@@ -4,6 +4,7 @@ import com.example.moabackend.domain.quiz.entity.type.EQuizCategory;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.user.entity.User;
 import jakarta.persistence.*;
+import jdk.jfr.Name;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,27 +22,28 @@ import java.util.Objects;
 public class QuizResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "quiz_result_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @Column(name = "total_number", nullable = false)
     private int totalNumber;
 
-    @Column(nullable = false)
+    @Column(name = "correct_number", nullable = false)
     private int correctNumber;
 
-    @Column(nullable = false)
+    @Column(name = "quiz_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private EQuizType type;
 
-    @Column(nullable = false)
+    @Column(name = "quiz_category", nullable = false)
     @Enumerated(EnumType.STRING)
     private EQuizCategory category;
 
-    @Column(nullable = false)
+    @Column(name = "created_date", nullable = false)
     private LocalDate date;
 
     @Builder
