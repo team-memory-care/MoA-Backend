@@ -75,6 +75,8 @@ public record SpacetimeQuizQuestionDto(
             );
         } catch (JsonProcessingException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
     }
 }

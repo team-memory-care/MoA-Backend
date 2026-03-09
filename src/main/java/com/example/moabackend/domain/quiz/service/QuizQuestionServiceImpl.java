@@ -7,7 +7,9 @@ import com.example.moabackend.domain.quiz.dto.res.question.QuizQuestionDto;
 import com.example.moabackend.domain.quiz.entity.QuizQuestion;
 import com.example.moabackend.domain.quiz.entity.type.EQuizType;
 import com.example.moabackend.domain.quiz.repository.QuizQuestionRepository;
+import com.example.moabackend.domain.quiz.dto.res.question.SpacetimeQuizQuestionDto;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.token.service.RedisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,10 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizConverter quizConverter;
     private final ObjectMapper objectMapper;
+    private final RedisService redisService;
+
+    private static final String SPACETIME_ANSWER_KEY = "spacetime:answer:%d:%d";
+    private static final long SPACETIME_ANSWER_TTL = 60 * 24; // 24시간(분)
 
     private static final int COUNT_PER_TYPE_TODAY = 3;
     private static final int COUNT_PER_TYPE_SET = 5;
@@ -52,7 +58,14 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
             } else {
                 typeEntities.stream()
                         .limit(COUNT_PER_TYPE_TODAY)
-                        .forEach(e -> quizSet.add(quizConverter.toDto(e)));
+                        .forEach(e -> {
+                            QuizQuestionDto dto = quizConverter.toDto(e);
+                            if (type == EQuizType.SPACETIME && dto instanceof SpacetimeQuizQuestionDto spacetimeDto) {
+                                String key = String.format(SPACETIME_ANSWER_KEY, userId, spacetimeDto.questionId());
+                                redisService.setData(key, spacetimeDto.answer(), SPACETIME_ANSWER_TTL);
+                            }
+                            quizSet.add(dto);
+                        });
             }
         }
 
@@ -84,7 +97,14 @@ public class QuizQuestionServiceImpl implements QuizQuestionService {
 
         List<Long> ids = quizQuestionRepository.findQuizIdsByType(type.name(), COUNT_PER_TYPE_SET);
         return quizQuestionRepository.findAllById(ids).stream()
-                .map(quizConverter::toDto)
+                .map(e -> {
+                    QuizQuestionDto dto = quizConverter.toDto(e);
+                    if (type == EQuizType.SPACETIME && dto instanceof SpacetimeQuizQuestionDto spacetimeDto) {
+                        String key = String.format(SPACETIME_ANSWER_KEY, userId, spacetimeDto.questionId());
+                        redisService.setData(key, spacetimeDto.answer(), SPACETIME_ANSWER_TTL);
+                    }
+                    return dto;
+                })
                 .toList();
     }
 }
