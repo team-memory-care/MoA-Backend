@@ -9,16 +9,16 @@ import java.util.List;
 
 
 public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long> {
-    @Query(value = "SELECT qq.id FROM quiz_question qq WHERE qq.type = :type ORDER BY RAND() LIMIT :count", nativeQuery = true)
+    @Query(value = "SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = :type ORDER BY RAND() LIMIT :count", nativeQuery = true)
     List<Long> findQuizIdsByType(@Param("type") String type, @Param("count") int count);
 
     @Query(value = """
             
-            (SELECT qq.id FROM quiz_question qq WHERE qq.type = 'PERSISTENCE' ORDER BY RAND() LIMIT 3)
-                       UNION ALL (SELECT qq.id FROM quiz_question qq WHERE qq.type = 'MEMORY' ORDER BY RAND() LIMIT 3)
-                             UNION ALL (SELECT qq.id FROM quiz_question qq WHERE qq.type = 'LINGUISTIC' ORDER BY RAND() LIMIT 3)
-                             UNION ALL (SELECT qq.id FROM quiz_question qq WHERE qq.type = 'ATTENTION' ORDER BY RAND() LIMIT 3)
-                             UNION ALL (SELECT qq.id FROM quiz_question qq WHERE qq.type = 'SPACETIME' ORDER BY RAND() LIMIT 3)
+            (SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = 'PERSISTENCE' ORDER BY RAND() LIMIT 3)
+                       UNION ALL (SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = 'MEMORY' ORDER BY RAND() LIMIT 3)
+                             UNION ALL (SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = 'LINGUISTIC' ORDER BY RAND() LIMIT 3)
+                             UNION ALL (SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = 'ATTENTION' ORDER BY RAND() LIMIT 3)
+                             UNION ALL (SELECT qq.quiz_question_id FROM quiz_question qq WHERE qq.quiz_type = 'SPACETIME' ORDER BY RAND() LIMIT 3)
             """, nativeQuery = true)
     List<Long> findTodayQuizIds();
 }
