@@ -17,20 +17,21 @@ public class QuizQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "quiz_question_id")
     private Long id;
 
     // 공통 필드
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "quiz_type", nullable = false)
     private EQuizType type;
 
-    @Column(nullable = false, length = 500)
+    @Column(name = "question_content", nullable = false, length = 500)
     private String questionContent;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "question_format", nullable = false, length = 100)
     private String questionFormat;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "answer", nullable = false, length = 100)
     private String answer;
 
     @Column(name = "detail_data", columnDefinition = "json")

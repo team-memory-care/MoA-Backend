@@ -55,19 +55,27 @@ public record SpacetimeQuizQuestionDto(
                     .map(S3UrlUtils::convertToHttpUrl)
                     .toList();
 
+            int originalAnswerIdx = Integer.parseInt(entity.getAnswer()) - 1;
+            String answerImageUrl = processedOptions.get(originalAnswerIdx);
+
             List<String> shuffledOptions = new ArrayList<>(processedOptions);
             Collections.shuffle(shuffledOptions);
+
+            int newAnswerIdx = shuffledOptions.indexOf(answerImageUrl) + 1;
+            String newAnswer = String.valueOf(newAnswerIdx);
 
             return new SpacetimeQuizQuestionDto(
                     entity.getId(),
                     entity.getType(),
                     entity.getQuestionFormat(),
                     entity.getQuestionContent(),
-                    entity.getAnswer(),
+                    newAnswer,
                     processedQuestionImage,
-                    processedOptions
+                    shuffledOptions
             );
         } catch (JsonProcessingException e) {
+            throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
             throw new CustomException(QuizErrorCode.QUIZ_DATA_FORMAT_ERROR);
         }
     }

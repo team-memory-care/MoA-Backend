@@ -18,6 +18,7 @@ import com.example.moabackend.domain.user.code.UserErrorCode;
 import com.example.moabackend.domain.user.entity.User;
 import com.example.moabackend.domain.user.repository.UserRepository;
 import com.example.moabackend.global.exception.CustomException;
+import com.example.moabackend.global.token.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,6 +41,9 @@ public class QuizResultServiceImpl implements QuizResultService {
     private final QuizConverter quizConverter;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ReportEventProducer reportEventProducer;
+    private final RedisService redisService;
+
+    private static final String SPACETIME_ANSWER_KEY = "spacetime:answer:%d:%d";
 
     @Override
     @Transactional
@@ -49,7 +53,7 @@ public class QuizResultServiceImpl implements QuizResultService {
 
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        boolean isCorrect = isAnswerCorrect(question, requestDto.userAnswer());
+        boolean isCorrect = isAnswerCorrect(question, requestDto.userAnswer(), userId);
         int correctCount = isCorrect ? 1 : 0;
 
         LocalDate date = requestDto.date() != null ? requestDto.date() : LocalDate.now();
@@ -173,6 +177,29 @@ public class QuizResultServiceImpl implements QuizResultService {
             String normalizedUser = CLEANUP_PATTERN.matcher(userAnswer).replaceAll("").toLowerCase();
             return normalizedDb.equals(normalizedUser);
         }
+        return question.getAnswer().trim().equalsIgnoreCase(userAnswer.trim());
+    }
+
+    private boolean isAnswerCorrect(QuizQuestion question, String userAnswer, Long userId) {
+        if (userAnswer == null || userAnswer.isBlank()) {
+            return false;
+        }
+
+        if (question.getType() == EQuizType.MEMORY) {
+            String normalizedDb = CLEANUP_PATTERN.matcher(question.getAnswer()).replaceAll("").toLowerCase();
+            String normalizedUser = CLEANUP_PATTERN.matcher(userAnswer).replaceAll("").toLowerCase();
+            return normalizedDb.equals(normalizedUser);
+        }
+
+        if (question.getType() == EQuizType.SPACETIME) {
+            String key = String.format(SPACETIME_ANSWER_KEY, userId, question.getId());
+            String shuffledAnswer = redisService.getData(key, String.class);
+            if (shuffledAnswer != null) {
+                return shuffledAnswer.trim().equalsIgnoreCase(userAnswer.trim());
+            }
+            // Redis에 없으면 원본 answer로 채점 (fallback)
+        }
+
         return question.getAnswer().trim().equalsIgnoreCase(userAnswer.trim());
     }
 }
