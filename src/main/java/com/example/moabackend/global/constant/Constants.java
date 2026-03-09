@@ -28,7 +28,7 @@ public class Constants {
             "/api/v1/auth/login"
     );
 
-    public static final String S3_URL_PREFIX = "https://moa-bucket-s3.s3.ap-northeast-2.amazonaws.com/";
+    public static final String S3_URL_PREFIX = "https://objectstorage.ap-chuncheon-1.oraclecloud.com/n/axowe6gavgsk/b/moa-bucket/o/";
 
     // Notification Messages
     public static final String DAILY_REPORT_TITLE = "%s님의 오늘 인지변화를 확인해보세요";
