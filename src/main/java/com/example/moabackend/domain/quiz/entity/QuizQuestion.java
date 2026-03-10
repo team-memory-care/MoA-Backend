@@ -17,12 +17,12 @@ public class QuizQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "quiz_question_id")
+    @Column(name = "id")
     private Long id;
 
     // 공통 필드
     @Enumerated(EnumType.STRING)
-    @Column(name = "quiz_type", nullable = false)
+    @Column(name = "type", nullable = false)
     private EQuizType type;
 
     @Column(name = "question_content", nullable = false, length = 500)
